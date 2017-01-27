@@ -2,59 +2,73 @@ package rs.telenor.intrep.db.beans;
 
 import java.util.*;
 
-class SimpleParameter {
-	int paramId;
-	String paramName;
-	String valueString;
-	int valueInt;
-	double valueDouble;
-	
-	SimpleParameter(int id, String name, String value) {
-		paramId = id;
-		paramName = name;
-		valueString = value;
-	}
-	
-	SimpleParameter(int id, String name, int value) {
-		paramId = id;
-		paramName = name;
-		valueInt = value;
-	}
-	
-	SimpleParameter(int id, String name, double value) {
-		paramId = id;
-		paramName = name;
-		valueDouble = value;
-	}
-	
-}
 
-class ComplexParameter {
-	int paramId;
-	String paramName;	
-	ArrayList<SimpleParameter> simpleParams;
-	
-	public void addSimpleParameter(SimpleParameter sp) {
-		simpleParams.add(sp);
-	}
-	
-}
 
 public class InteractionInstance {
 	int interactionInstanceId;
 	int componentId; //interaction type
 	String interactionDT;
-	ArrayList<SimpleParameter> simpleParams;
-	ArrayList<ComplexParameter> complexParams;
+	LinkedHashMap<String, SimpleParameter> simpleParams;
+	LinkedHashMap<String, ComplexParameter> complexParams;
 	
+	
+	public int getInteractionInstanceId() {
+		return interactionInstanceId;
+	}
+
+
+	public void setInteractionInstanceId(int interactionInstanceId) {
+		this.interactionInstanceId = interactionInstanceId;
+	}
+
+
+	public int getComponentId() {
+		return componentId;
+	}
+
+
+	public void setComponentId(int componentId) {
+		this.componentId = componentId;
+	}
+
+
+	public String getInteractionDT() {
+		return interactionDT;
+	}
+
+
+	public void setInteractionDT(String interactionDT) {
+		this.interactionDT = interactionDT;
+	}
+
+
+	public LinkedHashMap<String, SimpleParameter> getSimpleParams() {
+		return simpleParams;
+	}
+
+
+	public void setSimpleParams(LinkedHashMap<String, SimpleParameter> simpleParams) {
+		this.simpleParams = simpleParams;
+	}
+
+
+	public LinkedHashMap<String, ComplexParameter> getComplexParams() {
+		return complexParams;
+	}
+
+
+	public void setComplexParams(LinkedHashMap<String, ComplexParameter> complexParams) {
+		this.complexParams = complexParams;
+	}
+
+
 	public InteractionInstance(int interactionInstanceId, int componentId) {
 		this.interactionInstanceId = interactionInstanceId;
 		this.componentId = componentId;
-		simpleParams = new ArrayList<SimpleParameter>();
-		complexParams = new ArrayList<ComplexParameter>();
+		simpleParams = new LinkedHashMap<String, SimpleParameter>();
+		complexParams = new LinkedHashMap<String, ComplexParameter>();			
+		
 	}
-		public void addSimpleParameter(SimpleParameter sp) {
-			simpleParams.add(sp);
-	}
+	
 				
 }

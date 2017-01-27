@@ -1,7 +1,12 @@
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\JourneyInteractionDef.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\Parameter.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\Interaction.java
-C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\InteractionInstance.java
+C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\ComplexParameter.java
+C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\SimpleParameter.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\tables\InteractionManager.java
+C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\InteractionInstance.java
+C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\tables\InteractionInstanceManager.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\ConnectionManager.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\tables\ParameterManager.java
+C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\ParameterType.java
+C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\RawParameter.java
