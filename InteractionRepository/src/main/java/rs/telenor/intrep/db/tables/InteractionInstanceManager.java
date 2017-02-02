@@ -134,40 +134,42 @@ public class InteractionInstanceManager {
 		InteractionInstance inst = interactionInstances.get(interactionInstanceId);
 		if (inst != null) {
 			String sqlInt = "INSERT INTO IR.INTERACTIONS "+
-							"(" + 
-							"INTERACTION_ID, " +
-							"INTERACTION_DATE," +
-							"COMPONENT_ID, " +
-							"COMPONENT_REPETITION, " +
-							"JOURNEY_ID, " +
-							"COMPONENT_ORDER, " +
-							"PREV_INTERACTION_ID, " +
-							"JOURNEY_INSTANCE_ID, " +
-							"CO_ID, " +
-							"CUSTOMER_ID, " +
-							"CUSTCODE, " +
-							"MSISDN, " +							
-							"INTERACTION_SOURCE_ID) " +
-							"VALUES " +
-							"(" +
-							"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? " +
-							")";
+					"(" + 
+					"INTERACTION_ID, " +
+					"INTERACTION_DATE," +
+					"COMPONENT_ID, " +
+					"COMPONENT_REPETITION, " +
+					"JOURNEY_ID, " +
+					"COMPONENT_ORDER, " +
+					"PREV_INTERACTION_ID, " +
+					"JOURNEY_INSTANCE_ID, " +
+					"CO_ID, " +
+					"CUSTOMER_ID, " +
+					"CUSTCODE, " +
+					"MSISDN, " +							
+					"INTERACTION_SOURCE_ID) " +
+					"VALUES " +
+					"(" +
+					"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? " +
+					")";
 			String sqlIntParam = "INSERT INTO INTERACTION_PARAMETER " +
-								"( " +
-								"INTERACTION_ID, " +
-								"PARAMETER_ID, " +
-								"PARAMETER_NAME, " +
-								"PARAMETER_VALUE_ID," + 
-								"PARAMETER_VALUE_STRING, " +
-								"PARAMETER_VALUE_NUMBER, " + 
-								"PARAMETER_VALUE_DATE, " +
-								"PARAMETER_VALUE_INT, " +
-								"INTERACTION_DATE" +
-								") " +
-								"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-//			ResultSet rsInt = null;
+					"( " +
+					"INTERACTION_ID, " +
+					"PARAMETER_ID, " +
+					"PARAMETER_NAME, " +
+					"PARAMETER_VALUE_ID," + 
+					"PARAMETER_VALUE_STRING, " +
+					"PARAMETER_VALUE_NUMBER, " + 
+					"PARAMETER_VALUE_DATE, " +
+					"PARAMETER_VALUE_INT, " +
+					"INTERACTION_DATE, " +
+					"PARENT_PARAMETER_ID" +
+					"SIMPLE_PARAMETER_ORDER" +
+					") " +
+					"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			//			ResultSet rsInt = null;
 			try (
-//					Connection conn = ConnectionManager.getInstance().getConnection();
+					//					Connection conn = ConnectionManager.getInstance().getConnection();
 					PreparedStatement pstInt = conn.prepareStatement(sqlInt);
 					PreparedStatement pstSP = conn.prepareStatement(sqlIntParam)
 					)	{
@@ -185,7 +187,7 @@ public class InteractionInstanceManager {
 				pstInt.setNull(12, Types.NULL);
 				pstInt.setLong(13, inst.getInteractionSourceId());
 				pstInt.execute();
-				//					InteractionInstanceManager.interactionInstance.getSimpleParams().
+				//Upis simple parametara
 				for (Map.Entry<String, SimpleParameter> meSP: inst.getSimpleParams().entrySet()) {
 					pstSP.setLong(1, inst.getInteractionInstanceId());
 					pstSP.setInt(2,  meSP.getValue().getParamId());
@@ -196,6 +198,8 @@ public class InteractionInstanceManager {
 					pstSP.setNull(7, Types.NULL);
 					pstSP.setNull(8, Types.NULL);
 					pstSP.setString(9, inst.getInteractionDT());
+					pstSP.setNull(10, Types.NULL);
+					pstSP.setNull(11, Types.NULL);
 					ParameterType pt = meSP.getValue().getpType();
 					switch (pt) {
 					case ValueInt: 
@@ -213,13 +217,45 @@ public class InteractionInstanceManager {
 
 				}
 
-
-
-
+				//Upis complex parametara
+				for (Map.Entry<String, ComplexParameter> meCP: inst.getComplexParams().entrySet()) {
+					int counter = 0;
+					for (HashMap<String, SimpleParameter> simpleParams : meCP.getValue().getSimpleParams()) {
+						counter++;
+						for (Map.Entry<String, SimpleParameter>  spEntry : simpleParams.entrySet()) {
+							SimpleParameter sp = spEntry.getValue();
+							pstSP.setLong(1, inst.getInteractionInstanceId());
+							pstSP.setInt(2,  sp.getParamId());
+							pstSP.setString(3, sp.getParamName());
+							pstSP.setNull(4, Types.NULL); 
+							pstSP.setNull(5, Types.NULL);
+							pstSP.setNull(6, Types.NULL);
+							pstSP.setNull(7, Types.NULL);
+							pstSP.setNull(8, Types.NULL);
+							pstSP.setString(9, inst.getInteractionDT());
+							pstSP.setInt(10, meCP.getValue().getParamId());
+							pstSP.setInt(11, counter);
+							ParameterType pt = sp.getpType();
+							switch (pt) {
+							case ValueInt: 
+								pstSP.setInt(8, sp.getValueInt());					
+								break;
+							case ValueNumber:
+								pstSP.setDouble(6, sp.getValueDouble());
+								break;
+							case ValueString:
+								pstSP.setString(5, sp.getValueString());
+							default:
+								break;
+							}
+							pstSP.execute();
+						}
+					}
+				}
 			}
+			interactionInstances.remove(interactionInstanceId);
 		}
-		interactionInstances.remove(interactionInstanceId);
+
+
 	}
-	
-	
 }
