@@ -5,33 +5,74 @@ import rs.telenor.intrep.db.beans.InteractionInstance;
 import rs.telenor.intrep.db.beans.Parameter;
 import rs.telenor.intrep.db.beans.ParameterType;
 import rs.telenor.intrep.db.beans.SimpleParameter;
+import rs.telenor.intrep.db.ConnectionManager;
 import rs.telenor.intrep.db.beans.ComplexParameter;
 import rs.telenor.intrep.db.beans.RawParameter;
 import java.util.HashMap;
+import java.util.Map;
+import java.io.InputStream;
+import java.io.Reader;
+import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.NClob;
+import java.sql.ParameterMetaData;
+import java.sql.PreparedStatement;
+import java.sql.Ref;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.RowId;
+import java.sql.SQLData;
+import java.sql.SQLException;
+import java.sql.SQLType;
+import java.sql.SQLWarning;
+import java.sql.SQLXML;
+import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 
 
 public class InteractionInstanceManager {
-	public InteractionInstance interactionInstance;
+	private static HashMap<Long, InteractionInstance> interactionInstances;
+	private static Connection conn = ConnectionManager.getInstance().getConnection();
 	
-	
-	public void createInteractionInstance(int interactionInstanceId, int componentId) {
-		interactionInstance = new InteractionInstance(interactionInstanceId, componentId);
+	public static synchronized InteractionInstance createInteractionInstance(int componentId, String interactionDT, int interactionSourceId) throws SQLException {
+		Long interactionInstanceId = null;
+		
+		interactionInstanceId =  SurrogateKeyManager.getInstance().getKeyValue("INTERACTION");		
+		
+		InteractionInstance interactionInstance = new InteractionInstance(interactionInstanceId, componentId, interactionDT, interactionSourceId);
+		if (interactionInstances == null) interactionInstances = new HashMap<Long, InteractionInstance>();
+		interactionInstances.put(interactionInstanceId, interactionInstance);
+		return interactionInstance;
+		
 	}
 	
-	public void addSimpleParameter(int componentId, String name, String value) {
-		Interaction i = InteractionManager.getInteractionHierarchy().get(componentId);
+	public static synchronized void addSimpleParameter(Long interactionInstanceId, String name, String value)
+	{
+		InteractionInstance inst = interactionInstances.get(interactionInstanceId);
+		if (inst != null) {
+		Interaction i = InteractionManager.getInteractionHierarchy().get(inst.getComponentId());
 		SimpleParameter sp = null;
 		if (i != null) {
 			
 			sp = createSimpleParameter(i, name, value);
-				if (sp != null) interactionInstance.getSimpleParams().put(name, sp);
+				if (sp != null) inst.getSimpleParams().put(name, sp);
 			}				
+		}
 			
 	}
 	
-	public SimpleParameter createSimpleParameter(Interaction i, String name, String value) {
+	private static SimpleParameter createSimpleParameter(Interaction i, String name, String value) {
 		SimpleParameter sp = null;
 		Parameter p = i.getParameters().get(name);
 		if (p != null) {
@@ -54,21 +95,25 @@ public class InteractionInstanceManager {
 		else return null;
 	}
 	
-	public void addComplexParameter(int componentId, String name) {
-		Interaction i = InteractionManager.getInteractionHierarchy().get(componentId);
-		ComplexParameter cp = null;
-		if (i != null) {
-			
-			Parameter p = i.getParameters().get(name);
-			if (p != null) {
-				cp = new ComplexParameter(p.getParamId(), p.getParamName());				
-				interactionInstance.getComplexParams().put(name, cp);
-			}				
+	public static synchronized void addComplexParameter(Long interactionInstanceId, String name) {
+		InteractionInstance inst = interactionInstances.get(interactionInstanceId);
+		if (inst != null) {
+
+			Interaction i = InteractionManager.getInteractionHierarchy().get(inst.getComponentId());
+			ComplexParameter cp = null;
+			if (i != null) {
+
+				Parameter p = i.getParameters().get(name);
+				if (p != null) {
+					cp = new ComplexParameter(p.getParamId(), p.getParamName());				
+					inst.getComplexParams().put(name, cp);
+				}				
+			}
 		}
-			
+
 	}
 	
-	public void addSimpleParamToComplex(InteractionInstance i, String cpName, ArrayList<RawParameter> rawSimpleParams) {
+	public static synchronized void addSimpleParamToComplex(InteractionInstance i, String cpName, ArrayList<RawParameter> rawSimpleParams) {
 		Interaction inter = InteractionManager.getInteractionHierarchy().get(i.getComponentId());
 		if (inter != null) {
 			ComplexParameter cp = i.getComplexParams().get(cpName);
@@ -84,5 +129,97 @@ public class InteractionInstanceManager {
 			}
 		}
 	}
+	
+	public static synchronized void writeInteraction2DB(Long interactionInstanceId) throws SQLException {
+		InteractionInstance inst = interactionInstances.get(interactionInstanceId);
+		if (inst != null) {
+			String sqlInt = "INSERT INTO IR.INTERACTIONS "+
+							"(" + 
+							"INTERACTION_ID, " +
+							"INTERACTION_DATE," +
+							"COMPONENT_ID, " +
+							"COMPONENT_REPETITION, " +
+							"JOURNEY_ID, " +
+							"COMPONENT_ORDER, " +
+							"PREV_INTERACTION_ID, " +
+							"JOURNEY_INSTANCE_ID, " +
+							"CO_ID, " +
+							"CUSTOMER_ID, " +
+							"CUSTCODE, " +
+							"MSISDN, " +							
+							"INTERACTION_SOURCE_ID) " +
+							"VALUES " +
+							"(" +
+							"?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? " +
+							")";
+			String sqlIntParam = "INSERT INTO INTERACTION_PARAMETER " +
+								"( " +
+								"INTERACTION_ID, " +
+								"PARAMETER_ID, " +
+								"PARAMETER_NAME, " +
+								"PARAMETER_VALUE_ID," + 
+								"PARAMETER_VALUE_STRING, " +
+								"PARAMETER_VALUE_NUMBER, " + 
+								"PARAMETER_VALUE_DATE, " +
+								"PARAMETER_VALUE_INT, " +
+								"INTERACTION_DATE" +
+								") " +
+								"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+//			ResultSet rsInt = null;
+			try (
+//					Connection conn = ConnectionManager.getInstance().getConnection();
+					PreparedStatement pstInt = conn.prepareStatement(sqlInt);
+					PreparedStatement pstSP = conn.prepareStatement(sqlIntParam)
+					)	{
+				pstInt.setLong(1, inst.getInteractionInstanceId());
+				pstInt.setString(2, inst.getInteractionDT());
+				pstInt.setInt(3, inst.getComponentId());
+				pstInt.setNull(4, Types.NULL);
+				pstInt.setNull(5, Types.NULL);
+				pstInt.setNull(6, Types.NULL);
+				pstInt.setNull(7, Types.NULL);
+				pstInt.setNull(8, Types.NULL);
+				pstInt.setNull(9, Types.NULL);
+				pstInt.setNull(10, Types.NULL);
+				pstInt.setNull(11, Types.NULL);
+				pstInt.setNull(12, Types.NULL);
+				pstInt.setLong(13, inst.getInteractionSourceId());
+				pstInt.execute();
+				//					InteractionInstanceManager.interactionInstance.getSimpleParams().
+				for (Map.Entry<String, SimpleParameter> meSP: inst.getSimpleParams().entrySet()) {
+					pstSP.setLong(1, inst.getInteractionInstanceId());
+					pstSP.setInt(2,  meSP.getValue().getParamId());
+					pstSP.setString(3, meSP.getValue().getParamName());
+					pstSP.setNull(4, Types.NULL); 
+					pstSP.setNull(5, Types.NULL);
+					pstSP.setNull(6, Types.NULL);
+					pstSP.setNull(7, Types.NULL);
+					pstSP.setNull(8, Types.NULL);
+					pstSP.setString(9, inst.getInteractionDT());
+					ParameterType pt = meSP.getValue().getpType();
+					switch (pt) {
+					case ValueInt: 
+						pstSP.setInt(8, meSP.getValue().getValueInt());					
+						break;
+					case ValueNumber:
+						pstSP.setDouble(6, meSP.getValue().getValueDouble());
+						break;
+					case ValueString:
+						pstSP.setString(5, meSP.getValue().getValueString());
+					default:
+						break;
+					}
+					pstSP.execute();
+
+				}
+
+
+
+
+			}
+		}
+		interactionInstances.remove(interactionInstanceId);
+	}
+	
 	
 }

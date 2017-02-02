@@ -49,7 +49,7 @@ public class ConnectionManager {
 				return null;
 			}
 		}
-		else {
+		else {			
 			return conn;
 		}
 	}

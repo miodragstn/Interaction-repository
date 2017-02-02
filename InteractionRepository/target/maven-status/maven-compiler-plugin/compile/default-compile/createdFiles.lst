@@ -6,11 +6,14 @@ rs\telenor\intrep\db\ConnectionManager.class
 rs\telenor\intrep\db\beans\ComplexParameter.class
 rs\telenor\intrep\db\tables\ParameterManager.class
 rs\telenor\intrep\db\beans\Interaction.class
+rs\telenor\intrep\db\tables\Key.class
 rs\telenor\intrep\db\tables\InteractionInstanceManager$1.class
 rs\telenor\intrep\db\beans\ConditionOperator.class
+rs\telenor\intrep\db\tables\SurrogateKeyManager.class
 rs\telenor\intrep\db\beans\JourneyInteractionDef.class
 rs\telenor\intrep\db\beans\InteractionInstance.class
 rs\telenor\intrep\db\beans\SimpleCondition.class
 rs\telenor\intrep\db\beans\ComplexCondition.class
+rs\telenor\intrep\db\Main.class
 rs\telenor\intrep\db\beans\RawParameter.class
 rs\telenor\intrep\db\beans\Parameter.class

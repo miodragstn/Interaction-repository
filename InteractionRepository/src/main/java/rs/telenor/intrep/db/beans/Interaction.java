@@ -62,6 +62,7 @@ public class Interaction {
 	}
 	
 	public HashMap<String, Parameter> getParameters() {
+		if (parameters == null) parameters = new HashMap<String, Parameter>();
 		return parameters;
 	}
 	

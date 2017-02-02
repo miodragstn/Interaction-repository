@@ -5,19 +5,20 @@ import java.util.*;
 
 
 public class InteractionInstance {
-	int interactionInstanceId;
-	int componentId; //interaction type
+	Long interactionInstanceId;
+	int componentId; //interaction class id
 	String interactionDT;
+	int interactionSourceId;
 	LinkedHashMap<String, SimpleParameter> simpleParams;
 	LinkedHashMap<String, ComplexParameter> complexParams;
 	
 	
-	public int getInteractionInstanceId() {
+	public Long getInteractionInstanceId() {
 		return interactionInstanceId;
 	}
 
 
-	public void setInteractionInstanceId(int interactionInstanceId) {
+	public void setInteractionInstanceId(Long interactionInstanceId) {
 		this.interactionInstanceId = interactionInstanceId;
 	}
 
@@ -41,6 +42,16 @@ public class InteractionInstance {
 		this.interactionDT = interactionDT;
 	}
 
+	
+	public int getInteractionSourceId() {
+		return interactionSourceId;
+	}
+
+
+	public void setInteractionSourceId(int interactionSourceId) {
+		this.interactionSourceId = interactionSourceId;
+	}
+
 
 	public LinkedHashMap<String, SimpleParameter> getSimpleParams() {
 		return simpleParams;
@@ -62,9 +73,11 @@ public class InteractionInstance {
 	}
 
 
-	public InteractionInstance(int interactionInstanceId, int componentId) {
+	public InteractionInstance(Long interactionInstanceId, int componentId, String interactionDT, int interactionSourceId) {
 		this.interactionInstanceId = interactionInstanceId;
 		this.componentId = componentId;
+		this.interactionDT = interactionDT;
+		this.interactionSourceId = interactionSourceId;
 		simpleParams = new LinkedHashMap<String, SimpleParameter>();
 		complexParams = new LinkedHashMap<String, ComplexParameter>();			
 		
