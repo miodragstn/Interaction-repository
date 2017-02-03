@@ -36,7 +36,7 @@ public class Main {
 			rawSimpleParams.add(rp);
 			rp = new RawParameter("existingCustomer", "true");
 			rawSimpleParams.add(rp);
-			rp = new RawParameter("tmcode", "100");
+			rp = new RawParameter("tmCode", "100");
 			rawSimpleParams.add(rp);
 			rp = new RawParameter("deviceId", "10");
 			rawSimpleParams.add(rp);
