@@ -1,9 +1,16 @@
 package rs.telenor.intrep.db;
 
-import rs.telenor.intrep.db.tables.*;
-import rs.telenor.intrep.db.beans.*;
+
+import rs.telenor.intrep.db.beans.Interaction;
+import rs.telenor.intrep.db.beans.InteractionInstance;
+import rs.telenor.intrep.db.tables.InteractionInstanceManager;
+import rs.telenor.intrep.db.tables.InteractionManager;
+import rs.telenor.intrep.db.beans.RawParameter;
+
+
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Main {
@@ -14,10 +21,30 @@ public class Main {
 //		System.out.println("Interaction: " + i.getDesc());
 		InteractionInstance inst = null;
 		try {
-			inst = InteractionInstanceManager.createInteractionInstance(15, "2017-01-31", 3);
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "IMEI", "1234567890");
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "IMSI", "9999999999");
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "Phone Type", "S");
+			inst = InteractionInstanceManager.createInteractionInstance(17, "2017-01-31", 7);
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "1234567890");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "sessionId", "9999999999");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "role", "customer");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "channel", "web");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "journeyFacingMsisdn", "38163530360");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "deliveryMethod", "sto");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "paymentMethod", "onDelivery");
+			InteractionInstanceManager.addComplexParameter(inst.getInteractionInstanceId(), "basketItems");
+			ArrayList<RawParameter> rawSimpleParams = new ArrayList<RawParameter>();
+			RawParameter rp = null;
+			rp = new RawParameter("msisdn", "38163123456");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("existingCustomer", "true");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("tmcode", "100");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("deviceId", "10");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("devicePayment", "cosmos");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("additionalTerms", "true");
+			rawSimpleParams.add(rp);
+			InteractionInstanceManager.addSimpleParamToComplex(inst, "basketItems", rawSimpleParams);
 			InteractionInstanceManager.writeInteraction2DB(inst.getInteractionInstanceId());
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

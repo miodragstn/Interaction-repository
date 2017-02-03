@@ -163,8 +163,8 @@ public class InteractionInstanceManager {
 					"PARAMETER_VALUE_DATE, " +
 					"PARAMETER_VALUE_INT, " +
 					"INTERACTION_DATE, " +
-					"PARENT_PARAMETER_ID" +
-					"SIMPLE_PARAMETER_ORDER" +
+					"PARENT_PARAM_ID, " +
+					"SIMPLE_PARAM_ORD" +
 					") " +
 					"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			//			ResultSet rsInt = null;
