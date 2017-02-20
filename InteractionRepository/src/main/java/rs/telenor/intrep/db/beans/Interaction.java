@@ -3,44 +3,25 @@
 package rs.telenor.intrep.db.beans;
 
 import java.util.HashMap;
-
-import rs.telenor.intrep.db.beans.Parameter;
-
 import java.util.ArrayList;
 
-enum ConditionOperator {
-	EQ, GT, GTE, LT, LTE, DIF, LK, N, NN
-}
-
-class SimpleCondition {
-	int id;
-	String Name;
-	int parameterId;
-	String valueString;
-	int valueInt;
-	double valueDouble;
-	ConditionOperator operator;
-	
-	SimpleCondition(Parameter pt, ConditionOperator op, Object condValue) {
-		
-	}
-	
-}
+import rs.telenor.intrep.db.beans.Parameter;
+import rs.telenor.intrep.db.beans.JourneyInteraction;
 
 
-class ComplexCondition {
-	int id;
-	String Name;
-		
-	ArrayList<SimpleCondition> simpleConditions;
-	
-}
+
+
+
+
+
+
 
 public class Interaction {
 	private int id;
 	private int interactionTypeId;
 	private String desc;
-	HashMap<String, Parameter> parameters;
+	private HashMap<String, Parameter> parameters;
+	private ArrayList<JourneyInteraction> journeys;
 	
 	public int getId() {
 		return id;
@@ -68,6 +49,13 @@ public class Interaction {
 	
 	public void setParameters(HashMap<String, Parameter> parameters) {
 		this.parameters = parameters;
+	}
+	public ArrayList<JourneyInteraction> getJourneys() {
+		if (journeys == null) journeys = new ArrayList<JourneyInteraction>();
+		return journeys;
+	}
+	public void setJourneys(ArrayList<JourneyInteraction> journeys) {
+		this.journeys = journeys;
 	}
 	
 	

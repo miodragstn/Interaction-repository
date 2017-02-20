@@ -1,11 +1,17 @@
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\JourneyInteractionDef.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\Main.java
+C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\JourneyInstance.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\ComplexParameter.java
+C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\ConditionOperator.java
+C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\SimpleCondition.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\SimpleParameter.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\tables\SurrogateKeyManager.java
+C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\JourneyInteraction.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\ParameterType.java
+C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\ComplexCondition.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\Parameter.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\Interaction.java
+C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\ConditionSet.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\tables\InteractionManager.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\beans\InteractionInstance.java
 C:\Users\mistanic\git\Interaction-repository\InteractionRepository\src\main\java\rs\telenor\intrep\db\tables\InteractionInstanceManager.java

@@ -2,6 +2,8 @@ package rs.telenor.intrep.db.tables;
 
 import rs.telenor.intrep.db.beans.Interaction;
 import rs.telenor.intrep.db.beans.InteractionInstance;
+import rs.telenor.intrep.db.beans.JourneyInteraction;
+import rs.telenor.intrep.db.beans.JourneyInstance;
 import rs.telenor.intrep.db.beans.Parameter;
 import rs.telenor.intrep.db.beans.ParameterType;
 import rs.telenor.intrep.db.beans.SimpleParameter;
@@ -130,6 +132,109 @@ public class InteractionInstanceManager {
 		}
 	}
 	
+	public static synchronized void findJourney(InteractionInstance intInstance) throws SQLException {
+		//Nadji interakciju za InteractionInstance objekat
+		Interaction inter = InteractionManager.getInteractionHierarchy().get(intInstance.getComponentId());
+		//Ispitaj da li je interakcija deo nekog journey-a
+		String sqlFindJourney =	"SELECT " +
+											"JOURNEY_INSTANCE_ID, " +
+											"JOURNEY_ID, " + 
+											"JOURNEY_START_DATE, " + 
+											"JOURNEY_END_DATE, " + 
+											"JOURNEY_CURRENT_STEP, " + 
+											"JOURNEY_IDENTIFIER_PARAM_ID, " +
+											"JOURNEY_IDENTIFIER_VALUE, " + 
+											"CURRENT_INTERACTION_ID, " +
+											"CURRENT_INTERACTION_ORDER " +
+											"FROM JOURNEYS " +
+											"WHERE JOURNEY_IDENTIFIER_PARAM_ID = ? " +
+											"AND JOURNEY_IDENTIFIER_VALUE = ?";
+		
+		ResultSet rsJourneys = null;
+		JourneyInstance journeyInstance = null;
+		HashMap<Long, Integer> journeysProcessed = new HashMap<Long, Integer>(); 
+		for (JourneyInteraction ji : inter.getJourneys()) {
+			//Nadji identifikator journey-ja
+			int journeyIdentifierParamId = ji.getJourneyIdentifierParamId();
+			String journeyIdentifierParamName = ji.getJourneyIdentifierParamName();
+			String journeyIndentifierParamValue = "";
+			if (intInstance.getSimpleParams().containsKey(journeyIdentifierParamName)) {
+				ParameterType paramType = intInstance.getSimpleParams().get(journeyIdentifierParamName).getpType();
+				switch (paramType) {
+				case ValueString: journeyIndentifierParamValue = intInstance.getSimpleParams().get(journeyIdentifierParamName).getValueString();
+				break;
+				case ValueInt: journeyIndentifierParamValue = Integer.toString(intInstance.getSimpleParams().get(journeyIdentifierParamName).getValueInt());
+				break;
+				case ValueNumber: journeyIndentifierParamValue = Double.toString(intInstance.getSimpleParams().get(journeyIdentifierParamName).getValueDouble());
+				}
+				 
+			}
+			else continue; //ako parametra koji je identifikator journey-a nema u instanci interakcije, onda nema sta da se raymatra taj journey
+			//Sad trazimo da li je journey da nadjenim identifikatorom vec zapoceo
+			try (
+					//					Connection conn = ConnectionManager.getInstance().getConnection();
+					PreparedStatement pstJourneys = conn.prepareStatement(sqlFindJourney, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);					
+					) {
+				pstJourneys.setInt(1, journeyIdentifierParamId);
+				pstJourneys.setString(2, journeyIndentifierParamValue);
+				rsJourneys = pstJourneys.executeQuery();
+				if (rsJourneys.isBeforeFirst()) { //Ovaj metod vraca true ako je RS kursor ispred prvog reda ili RS nema redova 
+					rsJourneys.first();
+					journeyInstance = new JourneyInstance();
+					journeyInstance.setJourneyInstanceId(rsJourneys.getLong("JOURNEY_INSTANCE_ID"));
+					journeyInstance.setJourneyId(rsJourneys.getInt("JOURNEY_ID"));
+					journeyInstance.setJourneyStartDt(rsJourneys.getString("JOURNEY_START_DATE"));
+					journeyInstance.setJourneyEndDt(rsJourneys.getString("JOURNEY_END_DATE"));
+					journeyInstance.setJourneyCurrentStep(rsJourneys.getInt("JOURNEY_CURRENT_STEP"));
+					journeyInstance.setJourneyIdentifierParamId(rsJourneys.getInt("JOURNEY_IDENTIFIER_PARAM_ID"));
+					journeyInstance.setJourneyIdentifierValue(rsJourneys.getString("JOURNEY_IDENTIFIER_VALUE"));
+					journeyInstance.setCurrentInteractionInstanceId(rsJourneys.getLong("CURRENT_INTERACTION_ID"));
+					journeyInstance.setCurrentInteractionOrder(rsJourneys.getInt("CURRENT_INTERACTION_ORDER"));														
+				}
+				//Sad ispitujemo da li ova interakcija ispunjava uslove da journey pocne, ako nije poceo, ili da nastavi.
+				if (journeyInstance == null && ji.getPreviousStep() == 0) { //ako je ovo prva interakcija u journey-ju
+					journeyInstance = new JourneyInstance();
+					journeyInstance.setJourneyInstanceId(-1);
+					journeyInstance.setJourneyId(ji.getJourneyId());
+					journeyInstance.setJourneyStartDt(intInstance.getInteractionDT());
+					journeyInstance.setJourneyEndDt("");
+					journeyInstance.setJourneyCurrentStep(1);
+					journeyInstance.setJourneyIdentifierParamId(ji.getJourneyIdentifierParamId());
+					journeyInstance.setJourneyIdentifierValue(journeyIndentifierParamValue);
+					journeyInstance.setCurrentInteractionInstanceId(intInstance.getInteractionInstanceId());
+					journeyInstance.setCurrentInteractionOrder(1);
+					journeyInstance.setUpdateType(1); //insert journey-ja
+					intInstance.getJourneys().add(journeyInstance);
+					journeysProcessed.put(new Long(journeyInstance.getJourneyInstanceId()), new Integer(1));
+				}
+				else
+				if (!journeysProcessed.containsKey(journeyInstance.getJourneyInstanceId()) && journeyInstance.getJourneyCurrentStep() == ji.getPreviousStep() && ji.getNextStep() > 0) {
+					journeyInstance.setCurrentInteractionInstanceId(intInstance.getInteractionInstanceId());
+					journeyInstance.setJourneyCurrentStep(ji.getNextStep());
+					journeyInstance.setCurrentInteractionOrder(1); ///TODO: razmisliti kako izracunati broj pojavljivanja interakcije u aktivnom journey-ju
+					journeyInstance.setUpdateType(2); //update atributa journey-ja koji je u toku
+					intInstance.getJourneys().add(journeyInstance);
+					journeysProcessed.put(new Long(journeyInstance.getJourneyInstanceId()), new Integer(1));
+				}
+				else
+					if (!journeysProcessed.containsKey(journeyInstance.getJourneyInstanceId()) && ji.getComponentOrder() == -1) {
+						journeyInstance.setUpdateType(3); //samo ubaci interakciju u journey, sam journey koji je u toku ne diraj
+						intInstance.getJourneys().add(journeyInstance);
+					}
+				
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				if (rsJourneys != null) rsJourneys.close();
+			}
+			
+			
+			
+		}
+		
+	}
+	
 	public static synchronized void writeInteraction2DB(Long interactionInstanceId) throws SQLException {
 		InteractionInstance inst = interactionInstances.get(interactionInstanceId);
 		if (inst != null) {
@@ -167,11 +272,28 @@ public class InteractionInstanceManager {
 					"SIMPLE_PARAM_ORD" +
 					") " +
 					"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			String sqlJourneysInsert = "INSERT INTO JOURNEYS " +
+										 "( " +
+										 "JOURNEY_INSTANCE_ID, " +
+										 "JOURNEY_ID, " +
+										 "JOURNEY_START_DATE, " +										 										 
+										 "JOURNEY_CURRENT_STEP, " +
+										 "JOURNEY_IDENTIFIER_PARAM_ID, " +
+										 "JOURNEY_IDENTIFIER_VALUE, " +
+										 "CURRENT_INTERACTION_ID, " +
+										 "CURRENT_INTERACTION_ORDER " +
+										 ")" +
+										 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+			String sqlJourneysUpdate = "UPDATE JOURNEYS " +
+									 "SET CURRENT_INTERACTION_ID = ?, CURRENT_INTERACTION_ORDER = ?, JOURNEY_CURRENT_STEP = ? " +
+									 "WHERE JOURNEY_INSTANCE_ID = ?";
 			//			ResultSet rsInt = null;
 			try (
 					//					Connection conn = ConnectionManager.getInstance().getConnection();
 					PreparedStatement pstInt = conn.prepareStatement(sqlInt);
-					PreparedStatement pstSP = conn.prepareStatement(sqlIntParam)
+					PreparedStatement pstSP = conn.prepareStatement(sqlIntParam);
+					PreparedStatement pstJourneysInsert = conn.prepareStatement(sqlJourneysInsert);
+					PreparedStatement pstJourneysUpdate = conn.prepareCall(sqlJourneysUpdate);
 					)	{
 				pstInt.setLong(1, inst.getInteractionInstanceId());
 				pstInt.setString(2, inst.getInteractionDT());
@@ -250,6 +372,31 @@ public class InteractionInstanceManager {
 							}
 							pstSP.execute();
 						}
+					}
+				}
+			//Upis journey-ja
+				for (JourneyInstance ji : inst.getJourneys()) {
+					if (ji.getUpdateType() == 1) {
+						pstJourneysInsert.setLong(1, ji.getJourneyInstanceId());
+						pstJourneysInsert.setInt(2, ji.getJourneyId());
+						pstJourneysInsert.setString(3, ji.getJourneyStartDt());
+						pstJourneysInsert.setInt(4, ji.getJourneyCurrentStep());
+						pstJourneysInsert.setInt(5, ji.getJourneyIdentifierParamId());
+						pstJourneysInsert.setString(6, ji.getJourneyIdentifierValue());
+						pstJourneysInsert.setLong(7, ji.getCurrentInteractionInstanceId());
+						pstJourneysInsert.setInt(8, ji.getCurrentInteractionOrder());
+						pstJourneysInsert.execute();
+					}
+					if (ji.getUpdateType() == 2) {
+//						"UPDATE JOURNEYS " +
+//								 "SET CURRENT_INTERACTION_ID = ?, CURRENT_INTERACTION_ORDER = ?, JOURNEY_CURRENT_STEP = ? " +
+//								 "WHERE JOURNEY_INSTANCE_ID = ?";
+						pstJourneysUpdate.setLong(1, ji.getCurrentInteractionInstanceId());
+						pstJourneysUpdate.setInt(2, ji.getCurrentInteractionOrder());
+						pstJourneysUpdate.setInt(3, ji.getJourneyCurrentStep());
+						pstJourneysUpdate.setLong(4, ji.getJourneyInstanceId());
+						pstJourneysUpdate.execute();
+						
 					}
 				}
 			}

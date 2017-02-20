@@ -13,7 +13,9 @@ import java.util.HashMap;
 	ParameterType paramType;
 	
 	String valueDomain;
-	String valueDomainField;
+	String valueDomainLookup;
+	String valueDomainValue;
+	ParameterType valueDomainValueType;
 	HashMap<String, Parameter> childParams;
 	
 	public void addChildParam(Parameter p) {
@@ -57,12 +59,31 @@ import java.util.HashMap;
 	public void setValueDomain(String valueDomain) {
 		this.valueDomain = valueDomain;
 	}
-	public String getValueDomainField() {
-		return valueDomainField;
+	
+	public String getValueDomainLookup() {
+		return valueDomainLookup;
 	}
-	public void setValueDomainField(String valueDomainField) {
-		this.valueDomainField = valueDomainField;
+
+	public void setValueDomainLookup(String valueDomainLookup) {
+		this.valueDomainLookup = valueDomainLookup;
 	}
+
+	public String getValueDomainValue() {
+		return valueDomainValue;
+	}
+
+	public void setValueDomainValue(String valueDomainValue) {
+		this.valueDomainValue = valueDomainValue;
+	}
+
+	public ParameterType getValueDomainValueType() {
+		return valueDomainValueType;
+	}
+
+	public void setValueDomainValueType(ParameterType valueDomainValueType) {
+		this.valueDomainValueType = valueDomainValueType;
+	}
+
 	public HashMap<String, Parameter> getChildParams() {
 		return childParams;
 	}
