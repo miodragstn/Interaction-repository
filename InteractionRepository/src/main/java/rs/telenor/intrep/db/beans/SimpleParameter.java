@@ -7,6 +7,10 @@ public class SimpleParameter {
 	int valueInt;
 	double valueDouble;
 	ParameterType pType;
+	ParameterType valueDomainValueType;
+	String lookupValueString;
+	int lookupValueInt;
+	double lookupValueDouble;
 	
 	public SimpleParameter(int id, String name, String value) {
 		paramId = id;
@@ -75,6 +79,38 @@ public class SimpleParameter {
 
 	public void setpType(ParameterType pType) {
 		this.pType = pType;
+	}
+
+	public ParameterType getValueDomainValueType() {
+		return valueDomainValueType;
+	}
+
+	public void setValueDomainValueType(ParameterType valueDomainValueType) {
+		this.valueDomainValueType = valueDomainValueType;
+	}
+
+	public String getLookupValueString() {
+		return lookupValueString;
+	}
+
+	public void setLookupValueString(String lookupValueString) {
+		this.lookupValueString = lookupValueString;
+	}
+
+	public int getLookupValueInt() {
+		return lookupValueInt;
+	}
+
+	public void setLookupValueInt(int lookupValueInt) {
+		this.lookupValueInt = lookupValueInt;
+	}
+
+	public double getLookupValueDouble() {
+		return lookupValueDouble;
+	}
+
+	public void setLookupValueDouble(double lookupValueDouble) {
+		this.lookupValueDouble = lookupValueDouble;
 	}
 	
 	

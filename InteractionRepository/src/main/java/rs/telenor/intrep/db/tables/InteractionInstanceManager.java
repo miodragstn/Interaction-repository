@@ -77,6 +77,7 @@ public class InteractionInstanceManager {
 	private static SimpleParameter createSimpleParameter(Interaction i, String name, String value) {
 		SimpleParameter sp = null;
 		Parameter p = i.getParameters().get(name);
+		
 		if (p != null) {
 			ParameterType pt = p.getParamType();
 			switch (pt) {
@@ -90,6 +91,57 @@ public class InteractionInstanceManager {
 				sp = new SimpleParameter(p.getParamId(), name, value);
 			default:
 				break;
+			}
+			if (p.getValueDomain() != null && p.getValueDomain() != "") {
+				String valueDomainLookupFieldValue = "";
+				ParameterType dpt = p.getValueDomainValueType();
+				switch (pt) {
+				case ValueString: 
+					valueDomainLookupFieldValue =  "'"+sp.getValueString()+"'";					
+					break;
+				case ValueNumber:
+					valueDomainLookupFieldValue = Double.toString(sp.getValueDouble()) ;
+					break;
+				case ValueInt:
+					valueDomainLookupFieldValue = Integer.toString(sp.getValueInt());
+				default:
+					break;
+				}
+				String domainTable = p.getValueDomain();
+				String valueDomainLookupField = p.getValueDomainLookup();
+				String valueDomainValueField = p.getValueDomainValue();
+				String valueDomainValue;
+				String pDomainSQL = "SELECT " +
+												valueDomainValueField + " " +
+									"FROM " + domainTable + " " +
+									"WHERE " + valueDomainLookupField + "=" + valueDomainLookupFieldValue;
+				try (
+						PreparedStatement pstValueDomain = conn.prepareStatement(pDomainSQL, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+						) {
+					ResultSet rs = pstValueDomain.executeQuery();
+					if (rs.isBeforeFirst()) {
+						rs.first();
+						valueDomainValue = rs.getString(valueDomainValueField);
+						switch (dpt) {
+						case ValueInt: 
+							sp.setLookupValueInt(Integer.parseInt(valueDomainValue));					
+							break;
+						case ValueNumber:
+							sp.setLookupValueDouble(Double.parseDouble(valueDomainValue));
+							break;
+						case ValueString:
+							sp.setLookupValueString(valueDomainValue);
+						default:
+							break;
+						}
+						sp.setValueDomainValueType(dpt);
+					}
+					
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 			}
 			if (sp != null) return sp;
 			else return null;
@@ -269,9 +321,13 @@ public class InteractionInstanceManager {
 					"PARAMETER_VALUE_INT, " +
 					"INTERACTION_DATE, " +
 					"PARENT_PARAM_ID, " +
-					"SIMPLE_PARAM_ORD" +
+					"SIMPLE_PARAM_ORD, " +
+					"LOOKUP_VALUE_FIELD, " +
+					"LOOKUP_VALUE_INT, " +
+					"LOOKUP_VALUE_STRING, " +
+					"LOOKUP_VALUE_NUMBER " +
 					") " +
-					"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+					"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			String sqlJourneysInsert = "INSERT INTO JOURNEYS " +
 										 "( " +
 										 "JOURNEY_INSTANCE_ID, " +
@@ -281,7 +337,7 @@ public class InteractionInstanceManager {
 										 "JOURNEY_IDENTIFIER_PARAM_ID, " +
 										 "JOURNEY_IDENTIFIER_VALUE, " +
 										 "CURRENT_INTERACTION_ID, " +
-										 "CURRENT_INTERACTION_ORDER " +
+										 "CURRENT_INTERACTION_ORDER" +										 
 										 ")" +
 										 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 			String sqlJourneysUpdate = "UPDATE JOURNEYS " +
@@ -322,6 +378,10 @@ public class InteractionInstanceManager {
 					pstSP.setString(9, inst.getInteractionDT());
 					pstSP.setNull(10, Types.NULL);
 					pstSP.setNull(11, Types.NULL);
+					pstSP.setNull(12, Types.NULL);
+					pstSP.setNull(13, Types.NULL);
+					pstSP.setNull(14, Types.NULL);
+					pstSP.setNull(15, Types.NULL);
 					ParameterType pt = meSP.getValue().getpType();
 					switch (pt) {
 					case ValueInt: 
@@ -334,6 +394,22 @@ public class InteractionInstanceManager {
 						pstSP.setString(5, meSP.getValue().getValueString());
 					default:
 						break;
+					}
+					ParameterType dpt = meSP.getValue().getValueDomainValueType();
+					if (dpt != null) {
+//						pstSP.setString(12, meSP.getValue().getLookupValueString());
+						switch (dpt) {
+						case ValueInt: 
+							pstSP.setInt(13, meSP.getValue().getLookupValueInt());					
+							break;
+						case ValueNumber:
+							pstSP.setDouble(15, meSP.getValue().getLookupValueDouble());
+							break;
+						case ValueString:
+							pstSP.setString(14, meSP.getValue().getLookupValueString());
+						default:
+							break;
+						}
 					}
 					pstSP.execute();
 
@@ -357,6 +433,10 @@ public class InteractionInstanceManager {
 							pstSP.setString(9, inst.getInteractionDT());
 							pstSP.setInt(10, meCP.getValue().getParamId());
 							pstSP.setInt(11, counter);
+							pstSP.setNull(12, Types.NULL);
+							pstSP.setNull(13, Types.NULL);
+							pstSP.setNull(14, Types.NULL);
+							pstSP.setNull(15, Types.NULL);
 							ParameterType pt = sp.getpType();
 							switch (pt) {
 							case ValueInt: 
@@ -369,6 +449,22 @@ public class InteractionInstanceManager {
 								pstSP.setString(5, sp.getValueString());
 							default:
 								break;
+							}
+							ParameterType dpt = sp.getValueDomainValueType();
+							if (dpt != null) {
+//								pstSP.setString(12, sp.get);
+								switch (dpt) {
+								case ValueInt: 
+									pstSP.setInt(13, sp.getLookupValueInt());					
+									break;
+								case ValueNumber:
+									pstSP.setDouble(15, sp.getLookupValueDouble());
+									break;
+								case ValueString:
+									pstSP.setString(14, sp.getLookupValueString());
+								default:
+									break;
+								}
 							}
 							pstSP.execute();
 						}

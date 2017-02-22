@@ -49,34 +49,36 @@ public class InteractionManager {
 				Statement stmtJourneyInteractionComplCond = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				Statement stmtJourneyInteractionSimpleCond = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				ResultSet rsInt = stmtInt.executeQuery("SELECT INTERACTION_CLASS_ID, INTERACTION_CLASS_DESC, INTERACTION_TYPE_ID FROM INTERACTION_CLASS");
-				ResultSet rsParam = stmtParam.executeQuery("SELECT  ICP.INTERACTION_CLASS_ID," +
-															   "ICP.PARAMETER_ID," + 
-															   "P.NAME," + 
-														       "P.TYPE_ID," +
-														       "icp.VALUE_DOMAIN," +
-														       "icp.VALUE_DOMAIN_LOOKUP, " +
-														       "icp.VALUE_DOMAIN_VALUE, " +
-														       "icp.VALUE_DOMAIN_VALUE_TYPE " +
+				ResultSet rsParam = stmtParam.executeQuery("SELECT  ICP.INTERACTION_CLASS_ID, " +
+																   "ICP.PARAMETER_ID, " + 
+																   "P.NAME, " + 
+															       "P.TYPE_ID, " +
+															       "icp.VALUE_DOMAIN, " +
+															       "icp.VALUE_DOMAIN_LOOKUP, " +
+															       "icp.VALUE_DOMAIN_VALUE, " +
+															       "icp.VALUE_DOMAIN_VALUE_TYPE " +
 														"FROM INTERACTION_CLASS_PARAMETER icp " +
 														"join PARAMETER p " +
 														"on ICP.PARAMETER_ID = P.ID " +
-														"WHERE icp.PARENT_PARAMETER_ID IS NULL ");
-				ResultSet rsChildParam = stmtChildParam.executeQuery("SELECT  ICP.INTERACTION_CLASS_ID, " +
-															   "ICP.PARAMETER_ID, " + 
-															   "P.NAME, " + 
-															   "icp.PARENT_PARAMETER_ID, " +
-															   "parentP.NAME as PARENT_PARAMETER_NAME, " +
-														       "P.TYPE_ID, " +
-														       "icp.VALUE_DOMAIN, " +
-														       "icp.VALUE_DOMAIN_LOOKUP, " +
-														       "icp.VALUE_DOMAIN_VALUE, " +
-														       "icp.VALUE_DOMAIN_VALUE_TYPE " + 
+														"WHERE icp.PARENT_PARAMETER_ID IS NULL " +
+														"ORDER BY ICP.INTERACTION_CLASS_ID, ICP.PARAMETER_ID");
+				ResultSet rsChildParam = stmtChildParam.executeQuery("SELECT  	ICP.INTERACTION_CLASS_ID, " +
+																			   "ICP.PARAMETER_ID, " + 
+																			   "P.NAME, " + 
+																			   "icp.PARENT_PARAMETER_ID, " +
+																			   "parentP.NAME as PARENT_PARAMETER_NAME, " +
+																		       "P.TYPE_ID, " +
+																		       "icp.VALUE_DOMAIN, " +
+																		       "icp.VALUE_DOMAIN_LOOKUP, " +
+																		       "icp.VALUE_DOMAIN_VALUE, " +
+																		       "icp.VALUE_DOMAIN_VALUE_TYPE " + 
 														"FROM INTERACTION_CLASS_PARAMETER icp " +
 														"join PARAMETER p " +
 														"on ICP.PARAMETER_ID = P.ID " +
 														"join PARAMETER parentP " + 
-														"on p.PARENT_PARAMETER_ID = parentP.ID " +
-														"WHERE icp.PARENT_PARAMETER_ID IS NOT NULL ");
+														"on icp.PARENT_PARAMETER_ID = parentP.ID " +
+														"WHERE icp.PARENT_PARAMETER_ID IS NOT NULL " +
+														"ORDER BY ICP.INTERACTION_CLASS_ID, ICP.PARAMETER_ID");
 				ResultSet rsJourneyInteraction = stmtJourneyInteraction.executeQuery("SELECT JID.ID, " +
 																							"JID.JOURNEY_ID, " +
 																							 "JID.COMPONENT_ID, " +
@@ -108,7 +110,7 @@ public class InteractionManager {
 																					 			   	     "FROM JOURNEY_INTERACTION_SMPL_COND");
 				) {
 			
-			if(!rsJourneyInteractionSimpleCond.isClosed()) {
+			if(rsJourneyInteractionSimpleCond.isBeforeFirst()) {
 				int condType;
 				SimpleCondition sc = null;
 				ConditionOperator co = null;
@@ -148,7 +150,7 @@ public class InteractionManager {
 				}
 
 			}	
-			if(!rsJourneyInteractionComplCond.isClosed()) {
+			if(rsJourneyInteractionComplCond.isBeforeFirst()) {
 				ComplexCondition cc = null;
 				int simplCondId;
 				SimpleCondition sc = null;
@@ -165,7 +167,7 @@ public class InteractionManager {
 					
 				}
 			}
-			if(!rsJourneyInteractionSetCond.isClosed()) {					
+			if(rsJourneyInteractionSetCond.isBeforeFirst()) {					
 				ConditionSet cs = null;
 				int journeyInteractionId;
 				int complexCondId;
@@ -181,7 +183,7 @@ public class InteractionManager {
 			
 			Interaction inter;
 
-			if (!rsInt.isClosed()) {
+			if (rsInt.isBeforeFirst()) {
 				while (rsInt.next()) {
 					inter = new Interaction();
 					inter.setId(rsInt.getInt("INTERACTION_CLASS_ID"));
@@ -192,7 +194,7 @@ public class InteractionManager {
 
 				} 
 				
-				if (!rsParam.isClosed()) {
+				if (rsParam.isBeforeFirst()) {
 					while (rsParam.next()) {
 						inter = interactionHierarchy.get(rsParam.getInt("INTERACTION_CLASS_ID"));
 						if (inter != null) {
@@ -212,7 +214,7 @@ public class InteractionManager {
 							case 5 : p.setParamType(ParameterType.ValueDomain);
 							break;
 							}
-							if (rsParam.getString("VALUE_DOMAIN") != null) {
+							if (rsParam.getString("VALUE_DOMAIN") != "" && rsParam.getString("VALUE_DOMAIN") != null) {
 								p.setValueDomain(rsParam.getString("VALUE_DOMAIN"));
 								p.setValueDomainLookup(rsParam.getString("VALUE_DOMAIN_LOOKUP"));
 								p.setValueDomainValue(rsParam.getString("VALUE_DOMAIN_VALUE"));
@@ -231,7 +233,7 @@ public class InteractionManager {
 					}
 				}
 				
-				if (!rsChildParam.isClosed()) {
+				if (rsChildParam.isBeforeFirst()) {
 					while (rsChildParam.next()) {
 						inter = interactionHierarchy.get(rsChildParam.getInt("INTERACTION_CLASS_ID"));
 						if (inter != null) {
@@ -239,7 +241,7 @@ public class InteractionManager {
 							p.setParamId(rsChildParam.getInt("PARAMETER_ID"));
 							p.setParamName(rsChildParam.getString("NAME"));
 							p.setParentParamId(rsChildParam.getInt("PARENT_PARAMETER_ID"));
-							p.setParamName(rsChildParam.getString("PARENT_PARAMETER_NAME"));
+							p.setParentParamName(rsChildParam.getString("PARENT_PARAMETER_NAME"));
 							int paramType = (rsChildParam.getInt("TYPE_ID"));
 							switch (paramType) {
 								case 1 : p.setParamType(ParameterType.ValueString);
@@ -267,15 +269,16 @@ public class InteractionManager {
 								break;
 								}
 							}
-							Parameter parent = inter.getParameters().get(rsChildParam.getString("PARENTNAME")); //trazim Map sa parent parametrima 
-							if (parent != null) {
-								parent.addChildParam(p); //ako ga nadjem, dodajem parametar u mapu child parametara
-							}
+//							Parameter parent = inter.getParameters().get(rsChildParam.getString("PARENT_PARAMETER_NAME")); //trazim Map sa parent parametrima 
+//							if (parent != null) {
+//								parent.addChildParam(p); //ako ga nadjem, dodajem parametar u mapu child parametara
+//							}
+							inter.getParameters().put(p.getParamName(), p);
 						}
 					}
 				}
 			}
-				if (!rsJourneyInteraction.isClosed()) {
+				if (rsJourneyInteraction.isBeforeFirst()) {
 					JourneyInteraction ji = null;
 					ConditionSet cs = null;
 					while (rsJourneyInteraction.next()) {

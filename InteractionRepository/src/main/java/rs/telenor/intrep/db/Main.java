@@ -44,7 +44,7 @@ public class Main {
 		}*/
 		InteractionInstance inst = null;
 		try {
-			inst = InteractionInstanceManager.createInteractionInstance(60, "2017-01-31", 7);
+			inst = InteractionInstanceManager.createInteractionInstance(60, "2017-02-22", 7);
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "1234567890");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "sessionId", "9999999999");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "role", "customer");
@@ -59,7 +59,7 @@ public class Main {
 			rawSimpleParams.add(rp);
 			rp = new RawParameter("existingCustomer", "true");
 			rawSimpleParams.add(rp);
-			rp = new RawParameter("tmCode", "100");
+			rp = new RawParameter("tmCode", "461");
 			rawSimpleParams.add(rp);
 			rp = new RawParameter("deviceId", "10");
 			rawSimpleParams.add(rp);
