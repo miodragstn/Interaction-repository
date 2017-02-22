@@ -1,15 +1,10 @@
 package rs.telenor.intrep.db;
 
 
-import rs.telenor.intrep.db.beans.ComplexCondition;
-import rs.telenor.intrep.db.beans.Interaction;
-import rs.telenor.intrep.db.beans.InteractionInstance;
-import rs.telenor.intrep.db.beans.JourneyInteraction;
-import rs.telenor.intrep.db.beans.ParameterType;
+
 import rs.telenor.intrep.db.tables.InteractionInstanceManager;
 import rs.telenor.intrep.db.tables.InteractionManager;
-import rs.telenor.intrep.db.beans.RawParameter;
-import rs.telenor.intrep.db.beans.SimpleCondition;
+import rs.telenor.intrep.db.beans.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -19,8 +14,8 @@ public class Main {
 
 	public static void main(String[] args) {
 		HashMap<Integer, Interaction> interactions = InteractionManager.getInteractionHierarchy();
-		/*Interaction i = interactions.get(60);
-		System.out.println("Interaction: " + i.getDesc());
+		Interaction i = interactions.get(60);
+		/*System.out.println("Interaction: " + i.getDesc());
 		for (JourneyInteraction ji : i.getJourneys()) {
 			System.out.println("JourneyInteractionId: " + ji.getId() + ", JourneyId: " + ji.getJourneyId() + ", InteractionClassId: " + ji.getComponentId());
 			for (ComplexCondition cc : ji.getConditionSet()) {
@@ -44,7 +39,7 @@ public class Main {
 		}*/
 		InteractionInstance inst = null;
 		try {
-			inst = InteractionInstanceManager.createInteractionInstance(60, "2017-02-22", 7);
+			inst = InteractionInstanceManager.createInteractionInstance(67, "2017-02-22", 7);
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "1234567890");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "sessionId", "9999999999");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "role", "customer");

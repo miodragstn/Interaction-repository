@@ -14,6 +14,7 @@ public class JourneyInteraction {
 	private int journeyExpiryPeriod;
 	private int componentNumberOfRepetitions;
 	private int journeyActionId;
+	private int ConditionDefId;
 	
 	ArrayList<ComplexCondition> conditionSet;
 	
@@ -65,7 +66,6 @@ public class JourneyInteraction {
 	}
 	
 	
-	
 	public String getJourneyIdentifierParamName() {
 		return journeyIdentifierParamName;
 	}
@@ -97,6 +97,14 @@ public class JourneyInteraction {
 	}
 	public void setConditionSet(ArrayList<ComplexCondition> conditionSet) {
 		this.conditionSet = conditionSet;
+	}
+
+	public int getConditionDefId() {
+		return ConditionDefId;
+	}
+
+	public void setConditionDefId(int conditionDefId) {
+		ConditionDefId = conditionDefId;
 	}
 	
 	

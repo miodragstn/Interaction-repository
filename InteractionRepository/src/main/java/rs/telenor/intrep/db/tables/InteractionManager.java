@@ -89,14 +89,16 @@ public class InteractionManager {
 																							 "P.NAME AS JOURNEY_IDENTIFIER_PARAM_NAME, " +
 																							 "JID.JOURNEY_EXPIRY_PERIOD, " +
 																							 "JID.COMPONENT_NO_OF_REPETITIONS, " +
-																							 "JID.JOURNEY_ACTION_ID " +
+																							 "JID.JOURNEY_ACTION_ID ," +
+																							 "JID.CONDITION_DEF_ID " +
 																					 "FROM IR.JOURNEY_INTERACTION_DEFINITION JID " +
 																					 "JOIN IR.PARAMETER P " +
 																					 "ON JID.JOURNEY_IDENTIFIER_PARAM_ID = P.ID");
-				ResultSet rsJourneyInteractionSetCond = stmtJourneyInteractionSetCond.executeQuery("SELECT JOURNEY_INT_DEF_ID, " +
-																					 			   		   "COND_SET_ID, " +
-																					 			   		   "COMPL_COND_ID " +
-																					 			   "FROM JOURNEY_INTERACTION_SET_COND");
+				ResultSet rsJourneyInteractionSetCond = stmtJourneyInteractionSetCond.executeQuery("SELECT " +
+																										   "JISC.CONDITION_DEF_ID, " +
+																					 			   		   "JISC.COND_SET_ID, " +
+																					 			   		   "JISC.COMPL_COND_ID " +
+																					 			   "FROM JOURNEY_INTERACTION_SET_COND JISC " );
 				ResultSet rsJourneyInteractionComplCond = stmtJourneyInteractionComplCond.executeQuery("SELECT COMPL_COND_ID, " +
 																					 			   			   "SIMPLE_COND_ID " +
 																					 			   	   "FROM JOURNEY_INTERACTION_CMPL_COND");
@@ -169,14 +171,16 @@ public class InteractionManager {
 			}
 			if(rsJourneyInteractionSetCond.isBeforeFirst()) {					
 				ConditionSet cs = null;
-				int journeyInteractionId;
+				int conditionSetId;
 				int complexCondId;
 				while (rsJourneyInteractionSetCond.next()) {
-					journeyInteractionId = rsJourneyInteractionSetCond.getInt("JOURNEY_INT_DEF_ID");
+					conditionSetId = rsJourneyInteractionSetCond.getInt("COND_SET_ID");
 					complexCondId = rsJourneyInteractionSetCond.getInt("COMPL_COND_ID");
-					cs = new ConditionSet(journeyInteractionId);
+					cs = new ConditionSet(conditionSetId);
+					if (conditionSets.get(conditionSetId) == null) conditionSets.put(conditionSetId, cs);
 					cs.getComplexConds().add(complexConds.get(complexCondId));
-					if (conditionSets.get(journeyInteractionId) == null) conditionSets.put(journeyInteractionId, cs);
+					
+					
 					
 				}
 			}
@@ -296,7 +300,8 @@ public class InteractionManager {
 							ji.setJourneyExpiryPeriod(rsJourneyInteraction.getInt("JOURNEY_EXPIRY_PERIOD"));
 							ji.setComponentNumberOfRepetitions(rsJourneyInteraction.getInt("COMPONENT_NO_OF_REPETITIONS"));
 							ji.setJourneyActionId(rsJourneyInteraction.getInt("JOURNEY_ACTION_ID"));
-							cs = conditionSets.get(rsJourneyInteraction.getInt("ID"));
+							ji.setConditionDefId(rsJourneyInteraction.getInt("CONDITION_DEF_ID"));
+							cs = conditionSets.get(rsJourneyInteraction.getInt("CONDITION_DEF_ID"));
 							if (cs != null) {
 								for (ComplexCondition cc : cs.getComplexConds()) {
 									ji.getConditionSet().add(cc);
