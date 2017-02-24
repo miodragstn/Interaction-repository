@@ -16,10 +16,10 @@ public class JourneyInteraction {
 	private int journeyActionId;
 	private int ConditionDefId;
 	
-	ArrayList<ComplexCondition> conditionSet;
+	ArrayList<ConditionSet> conditionSet;
 	
 	public JourneyInteraction() {
-		conditionSet = new ArrayList<ComplexCondition>();
+		conditionSet = new ArrayList<ConditionSet>();
 	}
 	
 	public int getId() {
@@ -92,10 +92,10 @@ public class JourneyInteraction {
 	public void setJourneyActionId(int journeyActionId) {
 		this.journeyActionId = journeyActionId;
 	}
-	public ArrayList<ComplexCondition> getConditionSet() {
+	public ArrayList<ConditionSet> getConditionSet() {
 		return conditionSet;
 	}
-	public void setConditionSet(ArrayList<ComplexCondition> conditionSet) {
+	public void setConditionSet(ArrayList<ConditionSet> conditionSet) {
 		this.conditionSet = conditionSet;
 	}
 

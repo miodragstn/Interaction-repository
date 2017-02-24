@@ -23,6 +23,10 @@ public class ComplexCondition {
 		this.id = id;
 	}
 
+	
+
+	
+
 
 	public ArrayList<SimpleCondition> getSimpleConditions() {
 		return simpleConditions;

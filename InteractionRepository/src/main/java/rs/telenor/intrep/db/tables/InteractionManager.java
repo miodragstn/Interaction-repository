@@ -36,7 +36,7 @@ public class InteractionManager {
 	
 	private static synchronized void createInteractionHierarchy() {
 		interactionHierarchy = new HashMap<Integer, Interaction>() ;
-		HashMap<Integer, ConditionSet> conditionSets = new HashMap<Integer, ConditionSet>();
+		HashMap<Integer, ArrayList<ConditionSet>> conditionSets = new HashMap<Integer, ArrayList<ConditionSet>>();
 		HashMap<Integer, ComplexCondition> complexConds = new HashMap<Integer, ComplexCondition>();
 		HashMap<Integer, SimpleCondition> simpleConds = new HashMap<Integer, SimpleCondition>();
 		
@@ -98,18 +98,23 @@ public class InteractionManager {
 																										   "JISC.CONDITION_DEF_ID, " +
 																					 			   		   "JISC.COND_SET_ID, " +
 																					 			   		   "JISC.COMPL_COND_ID " +
-																					 			   "FROM JOURNEY_INTERACTION_SET_COND JISC " );
+																					 			   "FROM JOURNEY_INTERACTION_SET_COND JISC " +
+																					 			   "ORDER BY JISC.CONDITION_DEF_ID, JISC.COND_SET_ID, JISC.COMPL_COND_ID");
 				ResultSet rsJourneyInteractionComplCond = stmtJourneyInteractionComplCond.executeQuery("SELECT COMPL_COND_ID, " +
-																					 			   			   "SIMPLE_COND_ID " +
+																					 			   			   "SIMPLE_COND_ID, " +
+																					 			   			   "SCOPE " +
 																					 			   	   "FROM JOURNEY_INTERACTION_CMPL_COND");
-				ResultSet rsJourneyInteractionSimpleCond = stmtJourneyInteractionSimpleCond.executeQuery("SELECT CONDITION_ID, " +
-																					 			   	   			 "PARAMETER_ID, " +
-																					 			   	   			 "CONDITION_OPERATOR_CD, " +
-																					 			   	   			 "VALUE_TYPE_ID, " + 
-																					 			   	   			 "VALUE_STRING, " +
-																					 			   	   			 "VALUE_NUMBER, " +
-																					 			   	   			 "VALUE_INT " + 
-																					 			   	     "FROM JOURNEY_INTERACTION_SMPL_COND");
+				ResultSet rsJourneyInteractionSimpleCond = stmtJourneyInteractionSimpleCond.executeQuery("SELECT sc.CONDITION_ID, " +
+																					 			   	   			 "sc.PARAMETER_ID, " +
+																					 			   	   			 "p.NAME as PARAMETER_NAME, " +
+																					 			   	   			 "sc.CONDITION_OPERATOR_CD, " +
+																					 			   	   			 "sc.VALUE_TYPE_ID, " + 
+																					 			   	   			 "sc.VALUE_STRING, " +
+																					 			   	   			 "sc.VALUE_NUMBER, " +
+																					 			   	   			 "sc.VALUE_INT " + 
+																					 			   	     "FROM JOURNEY_INTERACTION_SMPL_COND sc " +
+																					 			   	   	 "JOIN PARAMETER p " +
+																					 			   	     "ON sc.PARAMETER_ID = p.ID");
 				) {
 			
 			if(rsJourneyInteractionSimpleCond.isBeforeFirst()) {
@@ -141,11 +146,11 @@ public class InteractionManager {
 					}
 					condType = rsJourneyInteractionSimpleCond.getInt("VALUE_TYPE_ID");
 					switch(condType) {							
-					case 1: sc = new SimpleCondition(rsJourneyInteractionSimpleCond.getInt("CONDITION_ID"), rsJourneyInteractionSimpleCond.getInt("PARAMETER_ID"), co, rsJourneyInteractionSimpleCond.getString("VALUE_STRING"));
+					case 1: sc = new SimpleCondition(rsJourneyInteractionSimpleCond.getInt("CONDITION_ID"), rsJourneyInteractionSimpleCond.getInt("PARAMETER_ID"), rsJourneyInteractionSimpleCond.getString("PARAMETER_NAME"), co, rsJourneyInteractionSimpleCond.getString("VALUE_STRING"));
 					break;
-					case 2: sc = new SimpleCondition(rsJourneyInteractionSimpleCond.getInt("CONDITION_ID"), rsJourneyInteractionSimpleCond.getInt("PARAMETER_ID"), co, rsJourneyInteractionSimpleCond.getInt("VALUE_INT"));
+					case 2: sc = new SimpleCondition(rsJourneyInteractionSimpleCond.getInt("CONDITION_ID"), rsJourneyInteractionSimpleCond.getInt("PARAMETER_ID"), rsJourneyInteractionSimpleCond.getString("PARAMETER_NAME"), co, rsJourneyInteractionSimpleCond.getInt("VALUE_INT"));
 					break;
-					case 3: sc = new SimpleCondition(rsJourneyInteractionSimpleCond.getInt("CONDITION_ID"), rsJourneyInteractionSimpleCond.getInt("PARAMETER_ID"), co, rsJourneyInteractionSimpleCond.getDouble("VALUE_NUMBER"));
+					case 3: sc = new SimpleCondition(rsJourneyInteractionSimpleCond.getInt("CONDITION_ID"), rsJourneyInteractionSimpleCond.getInt("PARAMETER_ID"), rsJourneyInteractionSimpleCond.getString("PARAMETER_NAME"), co, rsJourneyInteractionSimpleCond.getDouble("VALUE_NUMBER"));
 					break;
 					}
 					simpleConds.put(rsJourneyInteractionSimpleCond.getInt("CONDITION_ID"), sc);
@@ -156,14 +161,25 @@ public class InteractionManager {
 				ComplexCondition cc = null;
 				int simplCondId;
 				SimpleCondition sc = null;
+				String scope;
 				while (rsJourneyInteractionComplCond.next()) {
 					cc = new ComplexCondition(rsJourneyInteractionComplCond.getInt("COMPL_COND_ID"));
 					simplCondId = rsJourneyInteractionComplCond.getInt("SIMPLE_COND_ID");
-					
+					scope = rsJourneyInteractionComplCond.getString("SCOPE");
 					if (complexConds.get(cc.getId()) == null) complexConds.put(rsJourneyInteractionComplCond.getInt("COMPL_COND_ID"), cc);
 					if (simpleConds.get(simplCondId) != null)
 					{
 						sc = simpleConds.get(simplCondId);
+						ParameterType scValueType = simpleConds.get(simplCondId).getValueType();
+						switch (scValueType) {
+						case ValueString: sc = new SimpleCondition(simpleConds.get(simplCondId).getId(), simpleConds.get(simplCondId).getParameterId(), simpleConds.get(simplCondId).getParameterName(), simpleConds.get(simplCondId).getOperator(), simpleConds.get(simplCondId).getValueString());
+						break;
+						case ValueInt: sc = new SimpleCondition(simpleConds.get(simplCondId).getId(), simpleConds.get(simplCondId).getParameterId(), simpleConds.get(simplCondId).getParameterName(), simpleConds.get(simplCondId).getOperator(), simpleConds.get(simplCondId).getValueInt());
+						break;
+						case ValueNumber: sc = new SimpleCondition(simpleConds.get(simplCondId).getId(), simpleConds.get(simplCondId).getParameterId(), simpleConds.get(simplCondId).getParameterName(), simpleConds.get(simplCondId).getOperator(), simpleConds.get(simplCondId).getValueDouble());
+						break;
+						}
+						sc.setScope(scope);
 						complexConds.get(cc.getId()).getSimpleConditions().add(sc);
 					}
 					
@@ -171,17 +187,30 @@ public class InteractionManager {
 			}
 			if(rsJourneyInteractionSetCond.isBeforeFirst()) {					
 				ConditionSet cs = null;
-				int conditionSetId;
+				int conditionDefId = -1;
+				int conditionSetId = -1;
 				int complexCondId;
 				while (rsJourneyInteractionSetCond.next()) {
-					conditionSetId = rsJourneyInteractionSetCond.getInt("COND_SET_ID");
+//					conditionDefId = rsJourneyInteractionSetCond.getInt("CONDITION_DEF_ID");
+//					conditionSetId = rsJourneyInteractionSetCond.getInt("COND_SET_ID");
 					complexCondId = rsJourneyInteractionSetCond.getInt("COMPL_COND_ID");
-					cs = new ConditionSet(conditionSetId);
-					if (conditionSets.get(conditionSetId) == null) conditionSets.put(conditionSetId, cs);
-					cs.getComplexConds().add(complexConds.get(complexCondId));
+					if (conditionDefId != rsJourneyInteractionSetCond.getInt("CONDITION_DEF_ID")) { //Ako je novi JourneyInteractionDef
+						conditionSetId = -1;
+						conditionDefId = rsJourneyInteractionSetCond.getInt("CONDITION_DEF_ID");
+						conditionSets.put(conditionDefId, new ArrayList<ConditionSet>());
+					}
 					
-					
-					
+					if (conditionSetId != rsJourneyInteractionSetCond.getInt("COND_SET_ID")) { //Ako je novi ConditionSet, dodaj ga
+						conditionSetId = rsJourneyInteractionSetCond.getInt("COND_SET_ID");
+						cs = new ConditionSet(conditionDefId, conditionSetId);
+						cs.getComplexConds().add(complexConds.get(complexCondId));						
+						conditionSets.get(conditionDefId).add(cs);
+					}		
+					else {
+						cs.getComplexConds().add(complexConds.get(complexCondId));
+					}
+										
+																													
 				}
 			}
 			
@@ -282,38 +311,37 @@ public class InteractionManager {
 					}
 				}
 			}
-				if (rsJourneyInteraction.isBeforeFirst()) {
-					JourneyInteraction ji = null;
-					ConditionSet cs = null;
-					while (rsJourneyInteraction.next()) {
-						inter = interactionHierarchy.get(rsJourneyInteraction.getInt("COMPONENT_ID"));
-						if (inter != null) {
-							ji = new JourneyInteraction();
-							ji.setId(rsJourneyInteraction.getInt("ID"));
-							ji.setJourneyId(rsJourneyInteraction.getInt("JOURNEY_ID"));
-							ji.setComponentId(rsJourneyInteraction.getInt("COMPONENT_ID"));
-							ji.setComponentOrder(rsJourneyInteraction.getInt("COMPONENT_ORDER"));
-							ji.setPreviousStep(rsJourneyInteraction.getInt("PREVIOUS_STEP"));
-							ji.setNextStep(rsJourneyInteraction.getInt("NEXT_STEP"));
-							ji.setJourneyIdentifierParamId(rsJourneyInteraction.getInt("JOURNEY_IDENTIFIER_PARAM_ID"));
-							ji.setJourneyIdentifierParamName(rsJourneyInteraction.getString("JOURNEY_IDENTIFIER_PARAM_NAME"));
-							ji.setJourneyExpiryPeriod(rsJourneyInteraction.getInt("JOURNEY_EXPIRY_PERIOD"));
-							ji.setComponentNumberOfRepetitions(rsJourneyInteraction.getInt("COMPONENT_NO_OF_REPETITIONS"));
-							ji.setJourneyActionId(rsJourneyInteraction.getInt("JOURNEY_ACTION_ID"));
-							ji.setConditionDefId(rsJourneyInteraction.getInt("CONDITION_DEF_ID"));
-							cs = conditionSets.get(rsJourneyInteraction.getInt("CONDITION_DEF_ID"));
-							if (cs != null) {
-								for (ComplexCondition cc : cs.getComplexConds()) {
-									ji.getConditionSet().add(cc);
-								}
-							}
-							
-							inter.getJourneys().add(ji);
-							
-							}
-							
+			if (rsJourneyInteraction.isBeforeFirst()) {
+				JourneyInteraction ji = null;					
+				int conditionDefId;
+				while (rsJourneyInteraction.next()) {
+					inter = interactionHierarchy.get(rsJourneyInteraction.getInt("COMPONENT_ID"));
+					if (inter != null) {
+						ji = new JourneyInteraction();
+						ji.setId(rsJourneyInteraction.getInt("ID"));
+						ji.setJourneyId(rsJourneyInteraction.getInt("JOURNEY_ID"));
+						ji.setComponentId(rsJourneyInteraction.getInt("COMPONENT_ID"));
+						ji.setComponentOrder(rsJourneyInteraction.getInt("COMPONENT_ORDER"));
+						ji.setPreviousStep(rsJourneyInteraction.getInt("PREVIOUS_STEP"));
+						ji.setNextStep(rsJourneyInteraction.getInt("NEXT_STEP"));
+						ji.setJourneyIdentifierParamId(rsJourneyInteraction.getInt("JOURNEY_IDENTIFIER_PARAM_ID"));
+						ji.setJourneyIdentifierParamName(rsJourneyInteraction.getString("JOURNEY_IDENTIFIER_PARAM_NAME"));
+						ji.setJourneyExpiryPeriod(rsJourneyInteraction.getInt("JOURNEY_EXPIRY_PERIOD"));
+						ji.setComponentNumberOfRepetitions(rsJourneyInteraction.getInt("COMPONENT_NO_OF_REPETITIONS"));
+						ji.setJourneyActionId(rsJourneyInteraction.getInt("JOURNEY_ACTION_ID"));
+						ji.setConditionDefId(rsJourneyInteraction.getInt("CONDITION_DEF_ID"));
+						conditionDefId = rsJourneyInteraction.getInt("CONDITION_DEF_ID");
+						if (!rsJourneyInteraction.wasNull()) {
+						for (ConditionSet cs : conditionSets.get(conditionDefId)) {
+							ji.getConditionSet().add(cs);
 						}
+						}
+						inter.getJourneys().add(ji);
+
+					}
+
 				}
+			}
 				
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

@@ -39,8 +39,8 @@ public class Main {
 		}*/
 		InteractionInstance inst = null;
 		try {
-			inst = InteractionInstanceManager.createInteractionInstance(67, "2017-02-22", 7);
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "1234567890");
+			inst = InteractionInstanceManager.createInteractionInstance(60, "2017-02-15", 7);
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "555555876");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "sessionId", "9999999999");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "role", "customer");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "channel", "web");
@@ -55,6 +55,20 @@ public class Main {
 			rp = new RawParameter("existingCustomer", "true");
 			rawSimpleParams.add(rp);
 			rp = new RawParameter("tmCode", "461");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("deviceId", "10");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("devicePayment", "cosmos");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("additionalTerms", "true");
+			rawSimpleParams.add(rp);
+			InteractionInstanceManager.addSimpleParamToComplex(inst, "basketItems", rawSimpleParams);
+			rawSimpleParams = new ArrayList<RawParameter>();
+			rp = new RawParameter("msisdn", "3816312555");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("existingCustomer", "true");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("tmCode", "81");
 			rawSimpleParams.add(rp);
 			rp = new RawParameter("deviceId", "10");
 			rawSimpleParams.add(rp);

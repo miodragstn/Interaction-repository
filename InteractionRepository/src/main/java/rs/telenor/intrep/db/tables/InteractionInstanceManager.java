@@ -8,8 +8,13 @@ import rs.telenor.intrep.db.beans.Parameter;
 import rs.telenor.intrep.db.beans.ParameterType;
 import rs.telenor.intrep.db.beans.SimpleParameter;
 import rs.telenor.intrep.db.ConnectionManager;
+import rs.telenor.intrep.db.beans.ComplexCondition;
 import rs.telenor.intrep.db.beans.ComplexParameter;
+import rs.telenor.intrep.db.beans.ConditionOperator;
+import rs.telenor.intrep.db.beans.ConditionSet;
 import rs.telenor.intrep.db.beans.RawParameter;
+import rs.telenor.intrep.db.beans.SimpleCondition;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.io.InputStream;
@@ -221,8 +226,8 @@ public class InteractionInstanceManager {
 				}
 				 
 			}
-			else continue; //ako parametra koji je identifikator journey-a nema u instanci interakcije, onda nema sta da se raymatra taj journey
-			//Sad trazimo da li je journey da nadjenim identifikatorom vec zapoceo
+			else continue; //ako parametra koji je identifikator journey-a nema u instanci interakcije, onda nema sta da se razmatra taj journey
+			//Sad trazimo da li je journey sa nadjenim identifikatorom vec zapoceo
 			try (
 					//					Connection conn = ConnectionManager.getInstance().getConnection();
 					PreparedStatement pstJourneys = conn.prepareStatement(sqlFindJourney, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);					
@@ -245,33 +250,39 @@ public class InteractionInstanceManager {
 				}
 				//Sad ispitujemo da li ova interakcija ispunjava uslove da journey pocne, ako nije poceo, ili da nastavi.
 				if (journeyInstance == null && ji.getPreviousStep() == 0) { //ako je ovo prva interakcija u journey-ju
-					journeyInstance = new JourneyInstance();
-					journeyInstance.setJourneyInstanceId(-1);
-					journeyInstance.setJourneyId(ji.getJourneyId());
-					journeyInstance.setJourneyStartDt(intInstance.getInteractionDT());
-					journeyInstance.setJourneyEndDt("");
-					journeyInstance.setJourneyCurrentStep(1);
-					journeyInstance.setJourneyIdentifierParamId(ji.getJourneyIdentifierParamId());
-					journeyInstance.setJourneyIdentifierValue(journeyIndentifierParamValue);
-					journeyInstance.setCurrentInteractionInstanceId(intInstance.getInteractionInstanceId());
-					journeyInstance.setCurrentInteractionOrder(1);
-					journeyInstance.setUpdateType(1); //insert journey-ja
-					intInstance.getJourneys().add(journeyInstance);
-					journeysProcessed.put(new Long(journeyInstance.getJourneyInstanceId()), new Integer(1));
+					if (ji.getConditionDefId() > 0 && checkConditions(ji, intInstance)) { //Ako postoje uslovi na parmetarskom nivou, proveri ih i tek onda moze journey da se instancira
+						journeyInstance = new JourneyInstance();
+						journeyInstance.setJourneyInstanceId(-1);
+						journeyInstance.setJourneyId(ji.getJourneyId());
+						journeyInstance.setJourneyStartDt(intInstance.getInteractionDT());
+						journeyInstance.setJourneyEndDt("");
+						journeyInstance.setJourneyCurrentStep(1);
+						journeyInstance.setJourneyIdentifierParamId(ji.getJourneyIdentifierParamId());
+						journeyInstance.setJourneyIdentifierValue(journeyIndentifierParamValue);
+						journeyInstance.setCurrentInteractionInstanceId(intInstance.getInteractionInstanceId());
+						journeyInstance.setCurrentInteractionOrder(1);
+						journeyInstance.setUpdateType(1); //insert journey-ja
+						intInstance.getJourneys().add(journeyInstance);
+						journeysProcessed.put(new Long(journeyInstance.getJourneyInstanceId()), new Integer(1));
+					}
 				}
 				else
-				if (!journeysProcessed.containsKey(journeyInstance.getJourneyInstanceId()) && journeyInstance.getJourneyCurrentStep() == ji.getPreviousStep() && ji.getNextStep() > 0) {
-					journeyInstance.setCurrentInteractionInstanceId(intInstance.getInteractionInstanceId());
-					journeyInstance.setJourneyCurrentStep(ji.getNextStep());
-					journeyInstance.setCurrentInteractionOrder(1); ///TODO: razmisliti kako izracunati broj pojavljivanja interakcije u aktivnom journey-ju
-					journeyInstance.setUpdateType(2); //update atributa journey-ja koji je u toku
-					intInstance.getJourneys().add(journeyInstance);
-					journeysProcessed.put(new Long(journeyInstance.getJourneyInstanceId()), new Integer(1));
+				if (!journeysProcessed.containsKey(journeyInstance.getJourneyInstanceId()) && journeyInstance.getJourneyCurrentStep() == ji.getPreviousStep() && ji.getNextStep() > 0) { 
+					if (ji.getConditionDefId() > 0 && checkConditions(ji, intInstance)) {
+						journeyInstance.setCurrentInteractionInstanceId(intInstance.getInteractionInstanceId());
+						journeyInstance.setJourneyCurrentStep(ji.getNextStep());
+						journeyInstance.setCurrentInteractionOrder(1); // TODO: razmisliti kako izracunati broj pojavljivanja interakcije u aktivnom journey-ju
+						journeyInstance.setUpdateType(2); //update atributa journey-ja koji je u toku
+						intInstance.getJourneys().add(journeyInstance);
+						journeysProcessed.put(new Long(journeyInstance.getJourneyInstanceId()), new Integer(1));
+					}
 				}
 				else
 					if (!journeysProcessed.containsKey(journeyInstance.getJourneyInstanceId()) && ji.getComponentOrder() == -1) {
-						journeyInstance.setUpdateType(3); //samo ubaci interakciju u journey, sam journey koji je u toku ne diraj
-						intInstance.getJourneys().add(journeyInstance);
+						if (ji.getConditionDefId() > 0 && checkConditions(ji, intInstance)) {
+							journeyInstance.setUpdateType(3); //samo ubaci interakciju u journey, sam journey koji je u toku ne diraj. Jos nije napravljen mehanizam koji bi "samo ubacio" interakciju u journey 
+							intInstance.getJourneys().add(journeyInstance);
+						}
 					}
 				
 			} catch (SQLException e) {
@@ -285,6 +296,228 @@ public class InteractionInstanceManager {
 			
 		}
 		
+	}
+	
+	static Boolean checkConditions(JourneyInteraction ji, InteractionInstance inst) {
+		Boolean result = true;
+		Boolean csResult = false;
+		Boolean ccResult = true;
+		Boolean tmpResult = true;
+		SimpleParameter sp;
+		ComplexParameter cp;
+		String scope;
+		for (ConditionSet cs : ji.getConditionSet()) {
+			for (ComplexCondition cc : cs.getComplexConds()) {				
+				for (SimpleCondition sc : cc.getSimpleConditions()) {
+					Interaction i = InteractionManager.interactionHierarchy.get(inst.getComponentId());
+					Parameter p = i.getParameters().get(sc.getParameterName()); //Nadji parametar u kontekstu interakcije
+					if (p.getParentParamId() == 0) { //Ako je parametar simple, proveri uslov
+						sp = inst.getSimpleParams().get(p.getParamName());
+						if (sp != null) ccResult = ccResult & checkSimpleCondition(sp, sc); 
+						else ccResult = ccResult & false;
+					}
+					else {
+						cp = inst.getComplexParams().get(p.getParentParamName());
+						if (cp != null) {
+							tmpResult = true;
+							for (HashMap<String, SimpleParameter> simpleParams : cp.getSimpleParams()) {
+								sp = simpleParams.get(sc.getParameterName());
+								scope = sc.getScope();
+								if (scope.equals("ANY")) tmpResult = tmpResult | checkSimpleCondition(sp, sc); //Ako je scope za simple condition ANY, onda bilo koja true vrednost simple condition-a za instance simple parametra unutar kompleksnog parametra daje rezultat true 
+								else tmpResult = tmpResult & checkSimpleCondition(sp, sc); //inace svi simple conditioni za sve instance simple parametra unutar complex parametra moraju davati true				
+							}
+							ccResult = ccResult & tmpResult; //Complex condition je Bool-ov proizvod simple condition-a
+						}
+						else ccResult = ccResult & false;
+					}
+				}
+				csResult = csResult | ccResult; //Condition set je Bool-ov zbir complex condition-a
+			}
+			result = result & csResult;	//Konacan rezultat je Bool-ov proizvod condition set-ova
+		}
+		
+		return result;
+	}
+	
+	static Boolean checkSimpleCondition(SimpleParameter sp, SimpleCondition sc) {
+		ConditionOperator operator = sc.getOperator(); 
+		switch (operator) {
+		case EQ: if (sp.getValueDomainValueType() != null) {
+			if (sp.getValueDomainValueType() == ParameterType.ValueString) {
+				if (sp.getLookupValueString().equalsIgnoreCase(sc.getValueString())) return true;
+				else return false;
+			}
+			if (sp.getValueDomainValueType() == ParameterType.ValueInt) {
+				if (sp.getLookupValueInt() == sc.getValueInt()) return true;
+				else return false;
+			}
+			if (sp.getValueDomainValueType() == ParameterType.ValueNumber) {
+				if (sp.getLookupValueDouble() == sc.getValueDouble()) return true;
+				else return false;
+			}
+		}
+		else {
+			if (sp.getpType() == ParameterType.ValueString) {
+				if (sp.getValueString().equalsIgnoreCase(sc.getValueString())) return true;
+				else return false;
+			}
+			if (sp.getpType() == ParameterType.ValueInt) {
+				if (sp.getValueInt() == sc.getValueInt()) return true;
+				else return false;
+			}
+			if (sp.getpType() == ParameterType.ValueNumber) {
+				if (sp.getValueDouble() == sc.getValueDouble()) return true;
+				else return false;
+			}
+		}
+		break;
+		case DIF: if (sp.getValueDomainValueType() != null) {
+			if (sp.getValueDomainValueType() == ParameterType.ValueString) {
+				if (!sp.getLookupValueString().equalsIgnoreCase(sc.getValueString())) return true;
+				else return false;
+			}
+			if (sp.getValueDomainValueType() == ParameterType.ValueInt) {
+				if (sp.getLookupValueInt() != sc.getValueInt()) return true;
+				else return false;
+			}
+			if (sp.getValueDomainValueType() == ParameterType.ValueNumber) {
+				if (sp.getLookupValueDouble() != sc.getValueDouble()) return true;
+				else return false;
+			}
+		}
+		else {
+			if (sp.getpType() == ParameterType.ValueString) {
+				if (!sp.getValueString().equalsIgnoreCase(sc.getValueString())) return true;
+				else return false;
+			}
+			if (sp.getpType() == ParameterType.ValueInt) {
+				if (sp.getValueInt() != sc.getValueInt()) return true;
+				else return false;
+			}
+			if (sp.getpType() == ParameterType.ValueNumber) {
+				if (sp.getValueDouble() != sc.getValueDouble()) return true;
+				else return false;
+			}
+		}
+		break;
+		case GT: if (sp.getValueDomainValueType() != null) {
+			if (sp.getValueDomainValueType() == ParameterType.ValueString) {
+				if (sp.getLookupValueString().compareToIgnoreCase(sc.getValueString()) < 0) return true;
+				else return false;
+			}
+			if (sp.getValueDomainValueType() == ParameterType.ValueInt) {
+				if (sp.getLookupValueInt() < sc.getValueInt()) return true;
+				else return false;
+			}
+			if (sp.getValueDomainValueType() == ParameterType.ValueNumber) {
+				if (sp.getLookupValueDouble() < sc.getValueDouble()) return true;
+				else return false;
+			}
+		}
+		else {
+			if (sp.getpType() == ParameterType.ValueString) {
+				if (sp.getValueString().compareToIgnoreCase(sc.getValueString()) < 0) return true;
+				else return false;
+			}
+			if (sp.getpType() == ParameterType.ValueInt) {
+				if (sp.getValueInt() < sc.getValueInt()) return true;
+				else return false;
+			}
+			if (sp.getpType() == ParameterType.ValueNumber) {
+				if (sp.getValueDouble() < sc.getValueDouble()) return true;
+				else return false;
+			}
+		}
+		break;
+		case GTE: if (sp.getValueDomainValueType() != null) {
+			if (sp.getValueDomainValueType() == ParameterType.ValueString) {
+				if (sp.getLookupValueString().compareToIgnoreCase(sc.getValueString()) <= 0) return true;
+				else return false;
+			}
+			if (sp.getValueDomainValueType() == ParameterType.ValueInt) {
+				if (sp.getLookupValueInt() <= sc.getValueInt()) return true;
+				else return false;
+			}
+			if (sp.getValueDomainValueType() == ParameterType.ValueNumber) {
+				if (sp.getLookupValueDouble() <= sc.getValueDouble()) return true;
+				else return false;
+			}
+		}
+		else {
+			if (sp.getpType() == ParameterType.ValueString) {
+				if (sp.getValueString().compareToIgnoreCase(sc.getValueString()) <= 0) return true;
+				else return false;
+			}
+			if (sp.getpType() == ParameterType.ValueInt) {
+				if (sp.getValueInt() <= sc.getValueInt()) return true;
+				else return false;
+			}
+			if (sp.getpType() == ParameterType.ValueNumber) {
+				if (sp.getValueDouble() <= sc.getValueDouble()) return true;
+				else return false;
+			}
+		}
+		break;
+		case LT: if (sp.getValueDomainValueType() != null) {
+			if (sp.getValueDomainValueType() == ParameterType.ValueString) {
+				if (sp.getLookupValueString().compareToIgnoreCase(sc.getValueString()) > 0) return true;
+				else return false;
+			}
+			if (sp.getValueDomainValueType() == ParameterType.ValueInt) {
+				if (sp.getLookupValueInt() > sc.getValueInt()) return true;
+				else return false;
+			}
+			if (sp.getValueDomainValueType() == ParameterType.ValueNumber) {
+				if (sp.getLookupValueDouble() > sc.getValueDouble()) return true;
+				else return false;
+			}
+		}
+		else {
+			if (sp.getpType() == ParameterType.ValueString) {
+				if (sp.getValueString().compareToIgnoreCase(sc.getValueString()) > 0) return true;
+				else return false;
+			}
+			if (sp.getpType() == ParameterType.ValueInt) {
+				if (sp.getValueInt() > sc.getValueInt()) return true;
+				else return false;
+			}
+			if (sp.getpType() == ParameterType.ValueNumber) {
+				if (sp.getValueDouble() > sc.getValueDouble()) return true;
+				else return false;
+			}
+		}
+		break;
+		case LTE: if (sp.getValueDomainValueType() != null) {
+			if (sp.getValueDomainValueType() == ParameterType.ValueString) {
+				if (sp.getLookupValueString().compareToIgnoreCase(sc.getValueString()) >= 0) return true;
+				else return false;
+			}
+			if (sp.getValueDomainValueType() == ParameterType.ValueInt) {
+				if (sp.getLookupValueInt() >= sc.getValueInt()) return true;
+				else return false;
+			}
+			if (sp.getValueDomainValueType() == ParameterType.ValueNumber) {
+				if (sp.getLookupValueDouble() >= sc.getValueDouble()) return true;
+				else return false;
+			}
+		}
+		else {
+			if (sp.getpType() == ParameterType.ValueString) {
+				if (sp.getValueString().compareToIgnoreCase(sc.getValueString()) < 0) return true;
+				else return false;
+			}
+			if (sp.getpType() == ParameterType.ValueInt) {
+				if (sp.getValueInt() >= sc.getValueInt()) return true;
+				else return false;
+			}
+			if (sp.getpType() == ParameterType.ValueNumber) {
+				if (sp.getValueDouble() >= sc.getValueDouble()) return true;
+				else return false;
+			}
+		}
+		break;
+		}
+		return true;
 	}
 	
 	public static synchronized void writeInteraction2DB(Long interactionInstanceId) throws SQLException {

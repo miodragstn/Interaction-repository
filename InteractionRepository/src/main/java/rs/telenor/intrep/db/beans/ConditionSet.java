@@ -3,22 +3,33 @@ package rs.telenor.intrep.db.beans;
 import java.util.ArrayList;
 
 public class ConditionSet {
-	int journeyInteractionId;
+	int conditionDefId;
+	int conditionSetId;
 	ArrayList<ComplexCondition> complexConds;
 	
-	public ConditionSet(int id) {
-		journeyInteractionId = id;
+	public ConditionSet(int id, int conditionSetId) {
+		conditionDefId = id;
+		this.conditionSetId = conditionSetId;
 		complexConds = new ArrayList<ComplexCondition>();
 		
 		
 	}
 
-	public int getJourneyInteractionId() {
-		return journeyInteractionId;
+	public int getConditionDefId() {
+		return conditionDefId;
 	}
 
-	public void setJourneyInteractionId(int journeyInteractionId) {
-		this.journeyInteractionId = journeyInteractionId;
+	public void setConditionDefId(int conditionDefId) {
+		this.conditionDefId = conditionDefId;
+	}
+	
+	
+	public int getConditionSetId() {
+		return conditionSetId;
+	}
+
+	public void setConditionSetId(int conditionSetId) {
+		this.conditionSetId = conditionSetId;
 	}
 
 	public ArrayList<ComplexCondition> getComplexConds() {
