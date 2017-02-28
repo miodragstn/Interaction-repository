@@ -214,6 +214,7 @@ public class InteractionInstanceManager {
 		
 		ResultSet rsJourneys = null;
 		JourneyInstance journeyInstance = null;
+		long journeyInstanceId;
 		HashMap<Integer, Integer> journeysProcessed = new HashMap<Integer, Integer>(); 
 		ParameterType actionType;
 		int journeyActionId;
@@ -247,7 +248,7 @@ public class InteractionInstanceManager {
 				rsJourneys = pstJourneys.executeQuery();
 				if (rsJourneys.isBeforeFirst()) { //Ovaj metod vraca true ako je RS kursor ispred prvog reda ili RS nema redova 
 					rsJourneys.first();
-					journeyInstance = new JourneyInstance();
+					journeyInstance = new JourneyInstance();					
 					journeyInstance.setJourneyInstanceId(rsJourneys.getLong("JOURNEY_INSTANCE_ID"));
 					journeyInstance.setJourneyId(rsJourneys.getInt("JOURNEY_ID"));
 					journeyInstance.setJourneyStartDt(rsJourneys.getString("JOURNEY_START_DATE"));
@@ -261,9 +262,10 @@ public class InteractionInstanceManager {
 				}
 				//Sad ispitujemo da li ova interakcija ispunjava uslove da journey pocne, ako nije poceo, ili da nastavi.
 				if (journeyInstance == null && ji.getPreviousStep() == 0) { //ako je ovo prva interakcija u journey-ju
-					if (ji.getConditionDefId() > 0 && !journeysProcessed.containsKey(ji.getJourneyId()) && journeyInstance.getJourneyCurrentStep() == ji.getPreviousStep()&& checkConditions(ji.getConditionSet(), intInstance)) { //Ako postoje uslovi na parmetarskom nivou, proveri ih i tek onda moze journey da se instancira
+					if (ji.getConditionDefId() > 0 && !journeysProcessed.containsKey(ji.getJourneyId()) && checkConditions(ji.getConditionSet(), intInstance)) { //Ako postoje uslovi na parmetarskom nivou, proveri ih i tek onda moze journey da se instancira
 						journeyInstance = new JourneyInstance();
-						journeyInstance.setJourneyInstanceId(-1);
+						journeyInstanceId =  SurrogateKeyManager.getInstance().getKeyValue("JOURNEY");
+						journeyInstance.setJourneyInstanceId(journeyInstanceId);
 						journeyInstance.setJourneyId(ji.getJourneyId());
 						journeyInstance.setJourneyStartDt(intInstance.getInteractionDT());
 						journeyInstance.setJourneyEndDt("");
