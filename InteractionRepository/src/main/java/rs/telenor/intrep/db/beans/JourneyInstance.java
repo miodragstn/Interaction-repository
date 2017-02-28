@@ -11,6 +11,8 @@ public class JourneyInstance {
 	long currentInteractionInstanceId;
 	int currentInteractionOrder;
 	int updateType;
+	int journeyStatusId;
+	
 	public long getJourneyInstanceId() {
 		return journeyInstanceId;
 	}
@@ -71,6 +73,14 @@ public class JourneyInstance {
 	public void setUpdateType(int updateType) {
 		this.updateType = updateType;
 	}
+	public int getJourneyStatusId() {
+		return journeyStatusId;
+	}
+	public void setJourneyStatusId(int journeyStatusId) {
+		this.journeyStatusId = journeyStatusId;
+	}
+	
+	
 	
 	
 	

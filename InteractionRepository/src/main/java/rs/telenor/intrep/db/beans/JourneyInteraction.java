@@ -14,12 +14,14 @@ public class JourneyInteraction {
 	private int journeyExpiryPeriod;
 	private int componentNumberOfRepetitions;
 	private int journeyActionId;
-	private int ConditionDefId;
+	private int ConditionDefId;	
 	
 	ArrayList<ConditionSet> conditionSet;
+	ArrayList<JourneyActionDetail> actionDetails;
 	
 	public JourneyInteraction() {
 		conditionSet = new ArrayList<ConditionSet>();
+		actionDetails = new ArrayList<JourneyActionDetail>();
 	}
 	
 	public int getId() {
@@ -105,6 +107,14 @@ public class JourneyInteraction {
 
 	public void setConditionDefId(int conditionDefId) {
 		ConditionDefId = conditionDefId;
+	}
+
+	public ArrayList<JourneyActionDetail> getActionDetails() {
+		return actionDetails;
+	}
+
+	public void setActionDetails(ArrayList<JourneyActionDetail> actionDetails) {
+		this.actionDetails = actionDetails;
 	}
 	
 	

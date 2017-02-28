@@ -2,6 +2,7 @@ package rs.telenor.intrep.db.tables;
 
 import rs.telenor.intrep.db.beans.Interaction;
 import rs.telenor.intrep.db.beans.InteractionInstance;
+import rs.telenor.intrep.db.beans.JourneyActionDetail;
 import rs.telenor.intrep.db.beans.JourneyInteraction;
 import rs.telenor.intrep.db.beans.JourneyInstance;
 import rs.telenor.intrep.db.beans.Parameter;
@@ -202,16 +203,24 @@ public class InteractionInstanceManager {
 											"JOURNEY_IDENTIFIER_PARAM_ID, " +
 											"JOURNEY_IDENTIFIER_VALUE, " + 
 											"CURRENT_INTERACTION_ID, " +
-											"CURRENT_INTERACTION_ORDER " +
+											"CURRENT_INTERACTION_ORDER, " +
+											"JOURNEY_STATUS_ID " +
 											"FROM JOURNEYS " +
 											"WHERE JOURNEY_IDENTIFIER_PARAM_ID = ? " +
-											"AND JOURNEY_IDENTIFIER_VALUE = ?";
+											"AND JOURNEY_IDENTIFIER_VALUE = ? " +
+											"AND JOURNEY_ID = ? " +
+											"AND JOURNEY_STATUS_ID NOT IN (3,4,5)";
+				
 		
 		ResultSet rsJourneys = null;
 		JourneyInstance journeyInstance = null;
-		HashMap<Long, Integer> journeysProcessed = new HashMap<Long, Integer>(); 
+		HashMap<Integer, Integer> journeysProcessed = new HashMap<Integer, Integer>(); 
+		ParameterType actionType;
+		int journeyActionId;
 		for (JourneyInteraction ji : inter.getJourneys()) {
+			journeyInstance = null;
 			//Nadji identifikator journey-ja
+			if (journeysProcessed.containsKey(ji.getJourneyId())) continue; //Ako je interakcija vec usla u ovaj JourneyId, onda nemam vise sta da gledam za taj journey
 			int journeyIdentifierParamId = ji.getJourneyIdentifierParamId();
 			String journeyIdentifierParamName = ji.getJourneyIdentifierParamName();
 			String journeyIndentifierParamValue = "";
@@ -234,6 +243,7 @@ public class InteractionInstanceManager {
 					) {
 				pstJourneys.setInt(1, journeyIdentifierParamId);
 				pstJourneys.setString(2, journeyIndentifierParamValue);
+				pstJourneys.setInt(3, ji.getJourneyId());
 				rsJourneys = pstJourneys.executeQuery();
 				if (rsJourneys.isBeforeFirst()) { //Ovaj metod vraca true ako je RS kursor ispred prvog reda ili RS nema redova 
 					rsJourneys.first();
@@ -246,11 +256,12 @@ public class InteractionInstanceManager {
 					journeyInstance.setJourneyIdentifierParamId(rsJourneys.getInt("JOURNEY_IDENTIFIER_PARAM_ID"));
 					journeyInstance.setJourneyIdentifierValue(rsJourneys.getString("JOURNEY_IDENTIFIER_VALUE"));
 					journeyInstance.setCurrentInteractionInstanceId(rsJourneys.getLong("CURRENT_INTERACTION_ID"));
-					journeyInstance.setCurrentInteractionOrder(rsJourneys.getInt("CURRENT_INTERACTION_ORDER"));														
+					journeyInstance.setCurrentInteractionOrder(rsJourneys.getInt("CURRENT_INTERACTION_ORDER"));	
+					journeyInstance.setJourneyStatusId(rsJourneys.getInt("JOURNEY_STATUS_ID"));
 				}
 				//Sad ispitujemo da li ova interakcija ispunjava uslove da journey pocne, ako nije poceo, ili da nastavi.
 				if (journeyInstance == null && ji.getPreviousStep() == 0) { //ako je ovo prva interakcija u journey-ju
-					if (ji.getConditionDefId() > 0 && checkConditions(ji, intInstance)) { //Ako postoje uslovi na parmetarskom nivou, proveri ih i tek onda moze journey da se instancira
+					if (ji.getConditionDefId() > 0 && !journeysProcessed.containsKey(ji.getJourneyId()) && journeyInstance.getJourneyCurrentStep() == ji.getPreviousStep()&& checkConditions(ji.getConditionSet(), intInstance)) { //Ako postoje uslovi na parmetarskom nivou, proveri ih i tek onda moze journey da se instancira
 						journeyInstance = new JourneyInstance();
 						journeyInstance.setJourneyInstanceId(-1);
 						journeyInstance.setJourneyId(ji.getJourneyId());
@@ -262,26 +273,35 @@ public class InteractionInstanceManager {
 						journeyInstance.setCurrentInteractionInstanceId(intInstance.getInteractionInstanceId());
 						journeyInstance.setCurrentInteractionOrder(1);
 						journeyInstance.setUpdateType(1); //insert journey-ja
+						journeyInstance.setJourneyStatusId(1);
+						handleJourneyInteractionAction(ji, journeyInstance, intInstance); //Ova procedura vodi racuna o primeni akcija za JourneyInteraction 
 						intInstance.getJourneys().add(journeyInstance);
-						journeysProcessed.put(new Long(journeyInstance.getJourneyInstanceId()), new Integer(1));
+						journeysProcessed.put(journeyInstance.getJourneyId(), new Integer(1));
 					}
 				}
 				else
-				if (!journeysProcessed.containsKey(journeyInstance.getJourneyInstanceId()) && journeyInstance.getJourneyCurrentStep() == ji.getPreviousStep() && ji.getNextStep() > 0) { 
-					if (ji.getConditionDefId() > 0 && checkConditions(ji, intInstance)) {
+				if (journeyInstance!= null && !journeysProcessed.containsKey(ji.getJourneyId()) && journeyInstance.getJourneyCurrentStep() == ji.getPreviousStep() && ji.getNextStep() > 0) {
+					Boolean paramConditions = true;
+					if (ji.getConditionDefId() > 0 ) {      //Ako ima dodatnih uslova za parametre, proveri ih
+						paramConditions = checkConditions(ji.getConditionSet(), intInstance);						
+					}
+					
+					if (paramConditions) {	//Ako su uslovi zadovoljeni ili ih nema
 						journeyInstance.setCurrentInteractionInstanceId(intInstance.getInteractionInstanceId());
 						journeyInstance.setJourneyCurrentStep(ji.getNextStep());
 						journeyInstance.setCurrentInteractionOrder(1); // TODO: razmisliti kako izracunati broj pojavljivanja interakcije u aktivnom journey-ju
 						journeyInstance.setUpdateType(2); //update atributa journey-ja koji je u toku
+						handleJourneyInteractionAction(ji, journeyInstance, intInstance);
 						intInstance.getJourneys().add(journeyInstance);
-						journeysProcessed.put(new Long(journeyInstance.getJourneyInstanceId()), new Integer(1));
+						journeysProcessed.put(ji.getJourneyId(), new Integer(1));
 					}
 				}
 				else
-					if (!journeysProcessed.containsKey(journeyInstance.getJourneyInstanceId()) && ji.getComponentOrder() == -1) {
-						if (ji.getConditionDefId() > 0 && checkConditions(ji, intInstance)) {
+					if (journeyInstance!= null && !journeysProcessed.containsKey(ji.getJourneyId()) && ji.getComponentOrder() == -1) {
+						if (ji.getConditionDefId() > 0 && checkConditions(ji.getConditionSet(), intInstance)) {
 							journeyInstance.setUpdateType(3); //samo ubaci interakciju u journey, sam journey koji je u toku ne diraj. Jos nije napravljen mehanizam koji bi "samo ubacio" interakciju u journey 
 							intInstance.getJourneys().add(journeyInstance);
+							journeysProcessed.put(ji.getJourneyId(), new Integer(1));
 						}
 					}
 				
@@ -298,7 +318,36 @@ public class InteractionInstanceManager {
 		
 	}
 	
-	static Boolean checkConditions(JourneyInteraction ji, InteractionInstance inst) {
+	static void handleJourneyInteractionAction(JourneyInteraction ji, JourneyInstance journeyInstance, InteractionInstance intInstance) {
+		int journeyActionId;
+		if (ji.getJourneyActionId() > 0) { //Da li postoji neka akcija koja je vezana za JourneyInteraction
+			Boolean actionDetailOK = true;
+			for (JourneyActionDetail ad : ji.getActionDetails()) { //Pokupi sve korake koje treba izvrsiti
+				if (ad.getConditionDefId() > 0) { //Da li neki uslov treba da bude ispunjen za ActionDetail
+					actionDetailOK = checkConditions(ad.getConditionSets(), intInstance); //Proveri da li je uslov za ActionDetail ispunjen
+				}
+				if (actionDetailOK) { //Ako jeste, primeni akciju
+					journeyActionId = ad.getJourneyActionId(); 
+					switch (journeyActionId) { //O kojoj se akciji radi
+					case 1: journeyInstance.setJourneyId(ad.getActionParamValueInt()); //Switch journey
+					break;
+					case 2: journeyInstance.setJourneyStatusId(ad.getActionParamValueInt()); //Start Journey
+					break;
+					case 3: journeyInstance.setJourneyStatusId(ad.getActionParamValueInt());//Commit journey
+					break;
+					case 4: journeyInstance.setJourneyStatusId(ad.getActionParamValueInt());//Successfully end journey
+					break;
+					case 5: journeyInstance.setJourneyStatusId(ad.getActionParamValueInt());//Cancel journey
+					break;
+					case 6: journeyInstance.setJourneyStatusId(ad.getActionParamValueInt());//Expire journey
+					break;
+					}									
+				}
+			}
+		}
+	}
+	
+	static Boolean checkConditions(ArrayList<ConditionSet> condSets, InteractionInstance inst) {
 		Boolean result = true;
 		Boolean csResult = false;
 		Boolean ccResult = true;
@@ -306,7 +355,7 @@ public class InteractionInstanceManager {
 		SimpleParameter sp;
 		ComplexParameter cp;
 		String scope;
-		for (ConditionSet cs : ji.getConditionSet()) {
+		for (ConditionSet cs : condSets) {
 			for (ComplexCondition cc : cs.getComplexConds()) {				
 				for (SimpleCondition sc : cc.getSimpleConditions()) {
 					Interaction i = InteractionManager.interactionHierarchy.get(inst.getComponentId());
@@ -570,11 +619,12 @@ public class InteractionInstanceManager {
 										 "JOURNEY_IDENTIFIER_PARAM_ID, " +
 										 "JOURNEY_IDENTIFIER_VALUE, " +
 										 "CURRENT_INTERACTION_ID, " +
-										 "CURRENT_INTERACTION_ORDER" +										 
+										 "CURRENT_INTERACTION_ORDER, " +
+										 "JOURNEY_STATUS_ID " +										 
 										 ")" +
-										 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+										 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			String sqlJourneysUpdate = "UPDATE JOURNEYS " +
-									 "SET CURRENT_INTERACTION_ID = ?, CURRENT_INTERACTION_ORDER = ?, JOURNEY_CURRENT_STEP = ? " +
+									 "SET CURRENT_INTERACTION_ID = ?, CURRENT_INTERACTION_ORDER = ?, JOURNEY_CURRENT_STEP = ?, JOURNEY_STATUS_ID = ? " +
 									 "WHERE JOURNEY_INSTANCE_ID = ?";
 			//			ResultSet rsInt = null;
 			try (
@@ -714,6 +764,7 @@ public class InteractionInstanceManager {
 						pstJourneysInsert.setString(6, ji.getJourneyIdentifierValue());
 						pstJourneysInsert.setLong(7, ji.getCurrentInteractionInstanceId());
 						pstJourneysInsert.setInt(8, ji.getCurrentInteractionOrder());
+						pstJourneysInsert.setInt(9, ji.getJourneyStatusId());
 						pstJourneysInsert.execute();
 					}
 					if (ji.getUpdateType() == 2) {
@@ -723,7 +774,9 @@ public class InteractionInstanceManager {
 						pstJourneysUpdate.setLong(1, ji.getCurrentInteractionInstanceId());
 						pstJourneysUpdate.setInt(2, ji.getCurrentInteractionOrder());
 						pstJourneysUpdate.setInt(3, ji.getJourneyCurrentStep());
-						pstJourneysUpdate.setLong(4, ji.getJourneyInstanceId());
+						pstJourneysUpdate.setInt(4, ji.getJourneyStatusId());
+						pstJourneysUpdate.setLong(5, ji.getJourneyInstanceId());
+						
 						pstJourneysUpdate.execute();
 						
 					}

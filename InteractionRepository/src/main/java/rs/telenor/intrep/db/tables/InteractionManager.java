@@ -3,6 +3,7 @@ package rs.telenor.intrep.db.tables;
 import rs.telenor.intrep.db.beans.ComplexParameter;
 import rs.telenor.intrep.db.beans.ConditionOperator;
 import rs.telenor.intrep.db.beans.Interaction;
+import rs.telenor.intrep.db.beans.JourneyActionDetail;
 import rs.telenor.intrep.db.beans.JourneyInteraction;
 import rs.telenor.intrep.db.beans.Parameter;
 import rs.telenor.intrep.db.beans.ParameterType;
@@ -36,9 +37,10 @@ public class InteractionManager {
 	
 	private static synchronized void createInteractionHierarchy() {
 		interactionHierarchy = new HashMap<Integer, Interaction>() ;
-		HashMap<Integer, ArrayList<ConditionSet>> conditionSets = new HashMap<Integer, ArrayList<ConditionSet>>();
+		HashMap<Integer, ArrayList<ConditionSet>> conditionSets = new HashMap<Integer, ArrayList<ConditionSet>>();		
 		HashMap<Integer, ComplexCondition> complexConds = new HashMap<Integer, ComplexCondition>();
 		HashMap<Integer, SimpleCondition> simpleConds = new HashMap<Integer, SimpleCondition>();
+		HashMap<Integer, ArrayList<JourneyActionDetail>> journeyActions = new HashMap<Integer, ArrayList<JourneyActionDetail>>();
 		
 		try (
 				Statement stmtInt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -48,7 +50,8 @@ public class InteractionManager {
 				Statement stmtJourneyInteractionSetCond = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				Statement stmtJourneyInteractionComplCond = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				Statement stmtJourneyInteractionSimpleCond = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-				ResultSet rsInt = stmtInt.executeQuery("SELECT INTERACTION_CLASS_ID, INTERACTION_CLASS_DESC, INTERACTION_TYPE_ID FROM INTERACTION_CLASS");
+				Statement stmtJourneyActionDetails = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+				ResultSet rsInt = stmtInt.executeQuery("SELECT INTERACTION_CLASS_ID, INTERACTION_CLASS_DESC, INTERACTION_TYPE_ID FROM INTERACTION_CLASS ");
 				ResultSet rsParam = stmtParam.executeQuery("SELECT  ICP.INTERACTION_CLASS_ID, " +
 																   "ICP.PARAMETER_ID, " + 
 																   "P.NAME, " + 
@@ -115,6 +118,19 @@ public class InteractionManager {
 																					 			   	     "FROM JOURNEY_INTERACTION_SMPL_COND sc " +
 																					 			   	   	 "JOIN PARAMETER p " +
 																					 			   	     "ON sc.PARAMETER_ID = p.ID");
+				
+				ResultSet rsJourneyActionDetails = stmtJourneyActionDetails.executeQuery("SELECT " +
+																						"JOURNEY_ACTION_DETAILS_ID, " +
+																						"JOURNEY_ACTION_ID, " +
+																						"CONDITION_DEF_ID, " +
+																						"ACTION_PARAM_ID, " +
+																						"ACTION_PARAM_VALUE_STRING, " +
+																						"ACTION_PARAM_VALUE_INT, " + 
+																						"ACTION_PARAM_VALUE_NUMBER, " +
+																						"ACTION_PARAM_VALUE_TYPE " +
+																						"FROM JOURNEY_ACTION_DETAILS " +
+																						"ORDER BY JOURNEY_ACTION_ID, JOURNEY_ACTION_DETAILS_ID, CONDITION_DEF_ID");
+				
 				) {
 			
 			if(rsJourneyInteractionSimpleCond.isBeforeFirst()) {
@@ -185,6 +201,8 @@ public class InteractionManager {
 					
 				}
 			}
+			
+			
 			if(rsJourneyInteractionSetCond.isBeforeFirst()) {					
 				ConditionSet cs = null;
 				int conditionDefId = -1;
@@ -212,6 +230,46 @@ public class InteractionManager {
 										
 																													
 				}
+			}
+			
+			//Punjenje Action strukture
+			if(rsJourneyActionDetails.isBeforeFirst()) {					
+				JourneyActionDetail jad = null;
+				int journeyActionId = -1;
+				int journeyActionDetailId = -1;
+				int conditionDefId;
+				int journeyActionParamValueType;
+				while (rsJourneyActionDetails.next()) {
+					conditionDefId = rsJourneyActionDetails.getInt("CONDITION_DEF_ID");
+					journeyActionId = rsJourneyActionDetails.getInt("JOURNEY_ACTION_ID");					
+					//					conditionSetId = rsJourneyInteractionSetCond.getInt("COND_SET_ID");
+					//					complexCondId = rsJourneyInteractionSetCond.getInt("COMPL_COND_ID");
+					if (!journeyActions.containsKey(journeyActionId)) { //Ako je novi Action, dodaj ga						
+						journeyActions.put(journeyActionId, new ArrayList<JourneyActionDetail>());
+					}
+
+					journeyActionDetailId = rsJourneyActionDetails.getInt("JOURNEY_ACTION_DETAILS_ID");						
+					jad = new JourneyActionDetail(journeyActionDetailId, journeyActionId);
+					journeyActionParamValueType = rsJourneyActionDetails.getInt("ACTION_PARAM_VALUE_TYPE");
+					switch(journeyActionParamValueType) {
+					case 1: jad.setJourneyActionValueType(ParameterType.ValueString);
+					jad.setActionParamValueString(rsJourneyActionDetails.getString("ACTION_PARAM_VALUE_STRING"));								
+					break;
+					case 2: jad.setJourneyActionValueType(ParameterType.ValueInt);
+					jad.setActionParamValueInt(rsJourneyActionDetails.getInt("ACTION_PARAM_VALUE_INT"));								
+					break;
+					case 3: jad.setJourneyActionValueType(ParameterType.ValueNumber);
+					jad.setActionParamValueDouble(rsJourneyActionDetails.getDouble("ACTION_PARAM_VALUE_NUMBER"));								
+					break;
+					}
+					conditionDefId = rsJourneyActionDetails.getInt("CONDITION_DEF_ID");
+					if (!rsJourneyActionDetails.wasNull()) {	//Ako je za akciju potrebno i da skup nekih condition setova bude ispunjen...
+						jad.setConditionDefId(conditionDefId);
+						jad.setConditionSets(conditionSets.get(conditionDefId)); //...nadji taj skup i dodaj ga u Action Detail 
+					}
+					journeyActions.get(journeyActionId).add(jad);
+
+				}																																																	
 			}
 			
 			Interaction inter;
@@ -312,8 +370,10 @@ public class InteractionManager {
 				}
 			}
 			if (rsJourneyInteraction.isBeforeFirst()) {
-				JourneyInteraction ji = null;					
+				JourneyInteraction ji = null;
+				JourneyActionDetail jad;
 				int conditionDefId;
+				int journeyActionId;
 				while (rsJourneyInteraction.next()) {
 					inter = interactionHierarchy.get(rsJourneyInteraction.getInt("COMPONENT_ID"));
 					if (inter != null) {
@@ -331,10 +391,18 @@ public class InteractionManager {
 						ji.setJourneyActionId(rsJourneyInteraction.getInt("JOURNEY_ACTION_ID"));
 						ji.setConditionDefId(rsJourneyInteraction.getInt("CONDITION_DEF_ID"));
 						conditionDefId = rsJourneyInteraction.getInt("CONDITION_DEF_ID");
+						//Ubacivanje condition setova u JourneyInteraction
 						if (!rsJourneyInteraction.wasNull()) {
-						for (ConditionSet cs : conditionSets.get(conditionDefId)) {
-							ji.getConditionSet().add(cs);
+							for (ConditionSet cs : conditionSets.get(conditionDefId)) {
+								ji.getConditionSet().add(cs);
+							}
 						}
+						//Ubacivanje action-a u JourneyInteraction
+						journeyActionId = rsJourneyInteraction.getInt("JOURNEY_ACTION_ID");
+						if (!rsJourneyInteraction.wasNull()) {
+							for (JourneyActionDetail ad : journeyActions.get(journeyActionId)) {
+								ji.getActionDetails().add(ad);
+							}
 						}
 						inter.getJourneys().add(ji);
 
