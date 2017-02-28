@@ -86,8 +86,8 @@ public class InteractionManager {
 																							"JID.JOURNEY_ID, " +
 																							 "JID.COMPONENT_ID, " +
 																							 "JID.COMPONENT_ORDER, "+ 
-																							 "JID.PREVIOUS_STEP, " +
-																							 "JID.NEXT_STEP, " +
+																							 "NVL(JID.PREVIOUS_STEP,-1) AS PREVIOUS_STEP,  " +
+																							 "NVL(JID.NEXT_STEP, -1) AS NEXT_STEP, " +
 																							 "JID.JOURNEY_IDENTIFIER_PARAM_ID, " +
 																							 "P.NAME AS JOURNEY_IDENTIFIER_PARAM_NAME, " +
 																							 "JID.JOURNEY_EXPIRY_PERIOD, " +
