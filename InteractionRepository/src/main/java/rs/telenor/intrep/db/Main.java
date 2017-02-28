@@ -84,7 +84,7 @@ public class Main {
 //			InteractionInstanceManager.writeInteraction2DB(inst.getInteractionInstanceId());			
 			//Interakcija 61
 			inst = InteractionInstanceManager.createInteractionInstance(61, "2017-02-18", 7);
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "222222222");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "222222223");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "sessionId", "9999999999");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "role", "customer");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "channel", "web");
