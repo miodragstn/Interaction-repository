@@ -42,8 +42,8 @@ public class Main {
 		RawParameter rp = null;
 		try {
 //			Interakcija 60
-			inst = InteractionInstanceManager.createInteractionInstance(60, "2017-02-18", 7);
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "444444444");
+			inst = InteractionInstanceManager.createInteractionInstance(60, "2017-02-20", 7);
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "55555555");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "sessionId", "9999999999");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "role", "customer");
 			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "channel", "web");

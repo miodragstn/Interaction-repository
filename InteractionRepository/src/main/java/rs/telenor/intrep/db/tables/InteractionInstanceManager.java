@@ -4,6 +4,7 @@ import rs.telenor.intrep.db.beans.Interaction;
 import rs.telenor.intrep.db.beans.InteractionInstance;
 import rs.telenor.intrep.db.beans.JourneyActionDetail;
 import rs.telenor.intrep.db.beans.JourneyInteraction;
+import rs.telenor.intrep.db.beans.JourneyInteractionInstance;
 import rs.telenor.intrep.db.beans.JourneyInstance;
 import rs.telenor.intrep.db.beans.Parameter;
 import rs.telenor.intrep.db.beans.ParameterType;
@@ -278,6 +279,7 @@ public class InteractionInstanceManager {
 						journeyInstance.setJourneyStatusId(1);
 						handleJourneyInteractionAction(ji, journeyInstance, intInstance); //Ova procedura vodi racuna o primeni akcija za JourneyInteraction 
 						intInstance.getJourneys().add(journeyInstance);
+						intInstance.getJourneyInteractionInstance().add(new JourneyInteractionInstance(journeyInstance.getJourneyInstanceId(), intInstance.getInteractionInstanceId(), intInstance.getInteractionDT(),intInstance.getComponentId(), ji.getJourneyId()));
 						journeysProcessed.put(journeyInstance.getJourneyId(), new Integer(1));
 					}
 				}
@@ -295,6 +297,7 @@ public class InteractionInstanceManager {
 						journeyInstance.setUpdateType(2); //update atributa journey-ja koji je u toku
 						handleJourneyInteractionAction(ji, journeyInstance, intInstance);
 						intInstance.getJourneys().add(journeyInstance);
+						intInstance.getJourneyInteractionInstance().add(new JourneyInteractionInstance(journeyInstance.getJourneyInstanceId(), intInstance.getInteractionInstanceId(), intInstance.getInteractionDT(),intInstance.getComponentId(), ji.getJourneyId()));
 						journeysProcessed.put(ji.getJourneyId(), new Integer(1));
 					}
 				}
@@ -303,6 +306,7 @@ public class InteractionInstanceManager {
 						if (ji.getConditionDefId() > 0 && checkConditions(ji.getConditionSet(), intInstance)) {
 							journeyInstance.setUpdateType(3); //samo ubaci interakciju u journey, sam journey koji je u toku ne diraj. Jos nije napravljen mehanizam koji bi "samo ubacio" interakciju u journey 
 							intInstance.getJourneys().add(journeyInstance);
+							intInstance.getJourneyInteractionInstance().add(new JourneyInteractionInstance(journeyInstance.getJourneyInstanceId(), intInstance.getInteractionInstanceId(), intInstance.getInteractionDT(),intInstance.getComponentId(), ji.getJourneyId()));
 							journeysProcessed.put(ji.getJourneyId(), new Integer(1));
 						}
 					}
@@ -628,6 +632,11 @@ public class InteractionInstanceManager {
 			String sqlJourneysUpdate = "UPDATE JOURNEYS " +
 									 "SET CURRENT_INTERACTION_ID = ?, CURRENT_INTERACTION_ORDER = ?, JOURNEY_CURRENT_STEP = ?, JOURNEY_STATUS_ID = ? " +
 									 "WHERE JOURNEY_INSTANCE_ID = ?";
+			String sqlJourneyInteractionInstanceInsert = "INSERT INTO JOURNEY_INTERACTION_INSTANCE " +
+									 					 "( " +
+									 					 "JOURNEY_INSTANCE_ID, INTERACTION_ID, INTERACTION_DATE, COMPONENT_ID, JOURNEY_ID " +
+									 					 ") " +
+									 					 "VALUES (?, ?, ?, ?, ?)";
 			//			ResultSet rsInt = null;
 			try (
 					//					Connection conn = ConnectionManager.getInstance().getConnection();
@@ -635,6 +644,7 @@ public class InteractionInstanceManager {
 					PreparedStatement pstSP = conn.prepareStatement(sqlIntParam);
 					PreparedStatement pstJourneysInsert = conn.prepareStatement(sqlJourneysInsert);
 					PreparedStatement pstJourneysUpdate = conn.prepareCall(sqlJourneysUpdate);
+					PreparedStatement pstJourneyInteractionInstanceInsert = conn.prepareStatement(sqlJourneyInteractionInstanceInsert);
 					)	{
 				pstInt.setLong(1, inst.getInteractionInstanceId());
 				pstInt.setString(2, inst.getInteractionDT());
@@ -782,6 +792,15 @@ public class InteractionInstanceManager {
 						pstJourneysUpdate.execute();
 						
 					}
+				}
+				//Upis u tabelu JOURNEY_INTERACTION_INSTANCE
+				for (JourneyInteractionInstance jii : inst.getJourneyInteractionInstance()) {
+					pstJourneyInteractionInstanceInsert.setLong(1, jii.getJourneyInstanceId());
+					pstJourneyInteractionInstanceInsert.setLong(2, jii.getInteractionInstanceId());
+					pstJourneyInteractionInstanceInsert.setString(3, jii.getInteractionDate());
+					pstJourneyInteractionInstanceInsert.setInt(4, jii.getComponentId());
+					pstJourneyInteractionInstanceInsert.setInt(5, jii.getJourneyId());
+					pstJourneyInteractionInstanceInsert.execute();
 				}
 			}
 			interactionInstances.remove(interactionInstanceId);

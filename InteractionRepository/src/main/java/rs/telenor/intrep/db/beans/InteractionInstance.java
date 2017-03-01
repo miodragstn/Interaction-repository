@@ -12,6 +12,7 @@ public class InteractionInstance {
 	LinkedHashMap<String, SimpleParameter> simpleParams;
 	LinkedHashMap<String, ComplexParameter> complexParams;
 	ArrayList<JourneyInstance> journeys;
+	ArrayList<JourneyInteractionInstance> journeyInteractionInstance;
 	
 	
 	public Long getInteractionInstanceId() {
@@ -83,6 +84,18 @@ public class InteractionInstance {
 	public void setJourneys(ArrayList<JourneyInstance> journeys) {
 		this.journeys = journeys;
 	}
+	
+	
+
+
+	public ArrayList<JourneyInteractionInstance> getJourneyInteractionInstance() {
+		return journeyInteractionInstance;
+	}
+
+
+	public void setJourneyInteractionInstance(ArrayList<JourneyInteractionInstance> journeyInteractionInstance) {
+		this.journeyInteractionInstance = journeyInteractionInstance;
+	}
 
 
 	public InteractionInstance(Long interactionInstanceId, int componentId, String interactionDT, int interactionSourceId) {
@@ -93,6 +106,7 @@ public class InteractionInstance {
 		simpleParams = new LinkedHashMap<String, SimpleParameter>();
 		complexParams = new LinkedHashMap<String, ComplexParameter>();			
 		journeys = new ArrayList<JourneyInstance>();
+		journeyInteractionInstance = new ArrayList<JourneyInteractionInstance>();
 	}
 	
 				
