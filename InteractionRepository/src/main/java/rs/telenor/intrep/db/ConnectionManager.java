@@ -4,6 +4,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
+
 public class ConnectionManager {
 	public static ConnectionManager instance = null;
 	
@@ -18,7 +24,9 @@ public class ConnectionManager {
 		
 	}
 	
-	
+	private static final Logger serviceLog = Logger
+            .getLogger(ConnectionManager.class);
+
 	public static ConnectionManager getInstance() {
 		if (instance == null) {
 			instance = new ConnectionManager();			
@@ -39,6 +47,48 @@ public class ConnectionManager {
 		}
 	}
 	
+	public boolean openCEPConnection(Logger log) {
+		
+		String dsName = "java:/TEST_DWH_IR";
+		
+		try {
+			DataSource ds = (DataSource) InitialContext.doLookup(dsName);		
+			conn = ds.getConnection();			
+			return true;		
+						
+		}catch (SQLException e) {
+			serviceLog.error(e.getMessage(),e) ;
+			return false;
+		} catch (NamingException e) {
+			serviceLog.error(e.getMessage(),e) ;
+			return false;
+		}
+	}
+	
+	public Connection getCEPConnection(Logger log){
+		
+		try {
+			
+			if (conn == null) {
+				if (openCEPConnection(log)) {
+					serviceLog.info("Connection opened");
+					return conn;
+				}
+				else {
+					return null;
+				}
+			}
+			else {			
+				return conn;
+			}
+			
+		} catch (Exception e) {
+			serviceLog.error(e.getMessage(),e) ;
+		}
+		
+		return conn;
+		
+	}
 	public Connection getConnection() {
 		if (conn == null) {
 			if (openConnection()) {

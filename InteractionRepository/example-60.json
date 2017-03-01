@@ -1,0 +1,26 @@
+{
+"role":"customer",
+"basketId":"7000000001",
+"channel":"web",
+"journeyFacingMsisdn":"38163230238",
+"deliveryMethod":"sto",
+"paymentMethod":"online",
+"basketItems":[
+{
+ "msisdn":"38163230000",
+ "existingCustomer":true,
+ "tmCode":227,
+ "deviceId":10,
+ "devicePayment":"subsidy",
+ "additionalTerms":true
+ },
+ {
+ "msisdn":"38163230001",
+ "existingCustomer":false,
+ "tmCode":227,
+ "deviceId":15,
+ "devicePayment":"cosmos",
+ "additionalTerms":false
+ }
+]
+}

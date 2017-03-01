@@ -17,6 +17,8 @@ import java.util.LinkedHashMap;
 
 import javax.script.SimpleScriptContext;
 
+import org.apache.log4j.Logger;
+
 import java.util.ArrayList;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -26,11 +28,23 @@ import java.sql.Statement;
 
 public class InteractionManager {
 	public static HashMap<Integer, Interaction> interactionHierarchy;
-	private static Connection conn = ConnectionManager.getInstance().getConnection();
+//	private static Connection conn = ConnectionManager.getInstance().getConnection();
+	private static Connection conn ;
 	
 	private InteractionManager() {} //to make sure one cannot create instances of this class
 	
 	public static HashMap<Integer, Interaction> getInteractionHierarchy() {
+		if (conn==null){
+			conn = ConnectionManager.getInstance().getConnection();
+		}
+		if (interactionHierarchy == null) createInteractionHierarchy(); 						
+		return interactionHierarchy;		
+	}
+	
+	public static HashMap<Integer, Interaction> getInteractionHierarchy(Logger log) {
+		if (conn==null){
+			conn = ConnectionManager.getInstance().getCEPConnection(log);
+		}
 		if (interactionHierarchy == null) createInteractionHierarchy(); 						
 		return interactionHierarchy;		
 	}
