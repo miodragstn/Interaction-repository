@@ -279,7 +279,7 @@ public class InteractionInstanceManager {
 						journeyInstance.setJourneyStatusId(1);
 						handleJourneyInteractionAction(ji, journeyInstance, intInstance); //Ova procedura vodi racuna o primeni akcija za JourneyInteraction 
 						intInstance.getJourneys().add(journeyInstance);
-						intInstance.getJourneyInteractionInstance().add(new JourneyInteractionInstance(journeyInstance.getJourneyInstanceId(), intInstance.getInteractionInstanceId(), intInstance.getInteractionDT(),intInstance.getComponentId(), ji.getJourneyId()));
+						intInstance.getJourneyInteractionInstance().add(new JourneyInteractionInstance(journeyInstance.getJourneyInstanceId(), intInstance.getInteractionInstanceId(), intInstance.getInteractionDT(),intInstance.getComponentId(), journeyInstance.getJourneyId()));
 						journeysProcessed.put(journeyInstance.getJourneyId(), new Integer(1));
 					}
 				}
@@ -295,9 +295,9 @@ public class InteractionInstanceManager {
 						journeyInstance.setJourneyCurrentStep(ji.getNextStep());
 						journeyInstance.setCurrentInteractionOrder(1); // TODO: razmisliti kako izracunati broj pojavljivanja interakcije u aktivnom journey-ju
 						journeyInstance.setUpdateType(2); //update atributa journey-ja koji je u toku
-						handleJourneyInteractionAction(ji, journeyInstance, intInstance);
+						handleJourneyInteractionAction(ji, journeyInstance, intInstance);						
 						intInstance.getJourneys().add(journeyInstance);
-						intInstance.getJourneyInteractionInstance().add(new JourneyInteractionInstance(journeyInstance.getJourneyInstanceId(), intInstance.getInteractionInstanceId(), intInstance.getInteractionDT(),intInstance.getComponentId(), ji.getJourneyId()));
+						intInstance.getJourneyInteractionInstance().add(new JourneyInteractionInstance(journeyInstance.getJourneyInstanceId(), intInstance.getInteractionInstanceId(), intInstance.getInteractionDT(),intInstance.getComponentId(), journeyInstance.getJourneyId()));
 						journeysProcessed.put(ji.getJourneyId(), new Integer(1));
 					}
 				}
@@ -306,7 +306,7 @@ public class InteractionInstanceManager {
 						if (ji.getConditionDefId() > 0 && checkConditions(ji.getConditionSet(), intInstance)) {
 							journeyInstance.setUpdateType(3); //samo ubaci interakciju u journey, sam journey koji je u toku ne diraj. Jos nije napravljen mehanizam koji bi "samo ubacio" interakciju u journey 
 							intInstance.getJourneys().add(journeyInstance);
-							intInstance.getJourneyInteractionInstance().add(new JourneyInteractionInstance(journeyInstance.getJourneyInstanceId(), intInstance.getInteractionInstanceId(), intInstance.getInteractionDT(),intInstance.getComponentId(), ji.getJourneyId()));
+							intInstance.getJourneyInteractionInstance().add(new JourneyInteractionInstance(journeyInstance.getJourneyInstanceId(), intInstance.getInteractionInstanceId(), intInstance.getInteractionDT(),intInstance.getComponentId(), journeyInstance.getJourneyId()));
 							journeysProcessed.put(ji.getJourneyId(), new Integer(1));
 						}
 					}
@@ -630,7 +630,7 @@ public class InteractionInstanceManager {
 										 ")" +
 										 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			String sqlJourneysUpdate = "UPDATE JOURNEYS " +
-									 "SET CURRENT_INTERACTION_ID = ?, CURRENT_INTERACTION_ORDER = ?, JOURNEY_CURRENT_STEP = ?, JOURNEY_STATUS_ID = ? " +
+									 "SET CURRENT_INTERACTION_ID = ?, CURRENT_INTERACTION_ORDER = ?, JOURNEY_CURRENT_STEP = ?, JOURNEY_STATUS_ID = ?, JOURNEY_ID = ? " +
 									 "WHERE JOURNEY_INSTANCE_ID = ?";
 			String sqlJourneyInteractionInstanceInsert = "INSERT INTO JOURNEY_INTERACTION_INSTANCE " +
 									 					 "( " +
@@ -787,7 +787,8 @@ public class InteractionInstanceManager {
 						pstJourneysUpdate.setInt(2, ji.getCurrentInteractionOrder());
 						pstJourneysUpdate.setInt(3, ji.getJourneyCurrentStep());
 						pstJourneysUpdate.setInt(4, ji.getJourneyStatusId());
-						pstJourneysUpdate.setLong(5, ji.getJourneyInstanceId());
+						pstJourneysUpdate.setInt(5, ji.getJourneyId());
+						pstJourneysUpdate.setLong(6, ji.getJourneyInstanceId());
 						
 						pstJourneysUpdate.execute();
 						
