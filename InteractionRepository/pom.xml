@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>rs.telenor.intrep</groupId>
   <artifactId>InteractionRepository</artifactId>
-  <version>0.0.5</version>
+  <version>0.0.8</version>
   <packaging>jar</packaging>
   
   <properties>
@@ -75,27 +75,78 @@
           <target>1.7</target>
         </configuration>
       </plugin>
+     <plugin>
+		  <groupId>org.apache.maven.plugins</groupId>
+		  <artifactId>maven-jar-plugin</artifactId>
+			<configuration>
+			        <archive>
+			            <manifest>
+			                <addClasspath>true</addClasspath>
+			            </manifest>
+			            <manifestEntries>
+			                <Class-Path>lib/</Class-Path>
+			            </manifestEntries>
+			        </archive>
+      </configuration>
+   </plugin>
       <plugin>
-        <!-- NOTE: We don't need a groupId specification because the group is
-             org.apache.maven.plugins ...which is assumed by default.
-         -->
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+      <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>3.0.0</version>
         <configuration>
+		    <archive>
+		      <manifest>
+		      	<addClasspath>true</addClasspath>
+		        <!--<mainClass>${fully.qualified.class.name}</mainClass>-->
+		      </manifest>
+		    </archive>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
         </configuration>
          <executions>
           <execution>
-            <id>make-assembly</id> <!-- this is used for inheritance merges -->
-            <phase>package</phase> <!-- bind to the packaging phase -->
-            <goals>
+            <id>make-assembly</id>
+            <phase>package</phase>
+          <goals>
               <goal>single</goal>
             </goals>
+        
           </execution>
         </executions>
-         </plugin>
+       </plugin>
+<!--      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <minimizeJar>true</minimizeJar>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+  -->   
+    
     </plugins>
 	</build>
 </project>
