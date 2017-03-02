@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
@@ -23,6 +24,8 @@ import rs.telenor.intrep.db.tables.InteractionManager;
 
 public class JsonManager {
 
+	private static final Logger serviceLog = Logger
+            .getLogger(JsonManager.class);
 
 	//  static JasonData jsonData = new JasonData();
 
@@ -136,14 +139,16 @@ public class JsonManager {
 	}
 
 	public static void jsonWriteToDb(String JSONData, InteractionInstance inst) throws SQLException{
-		HashMap<Integer, Interaction> interactions = InteractionManager.getInteractionHierarchy();
 		
+    	serviceLog.info("jsonWriteToDb_MX"+JSONData);
+		HashMap<Integer, Interaction> interactions = InteractionManager.getInteractionHierarchy();
+		String dataStr = "{"+JSONData+"}";
 		try {
 			JsonFactory jasonFactory = new JsonFactory();
 
 			// read JSON by nodes
 //			JsonParser jsonParser = jasonFactory.createJsonParser(new File("example.json"));
-			JsonParser jsonParser = jasonFactory.createJsonParser(JSONData);
+			JsonParser jsonParser = jasonFactory.createJsonParser(dataStr);
 
 			System.out.println("looping\n");
 			while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
@@ -159,7 +164,7 @@ public class JsonManager {
 				//    		  System.out.println(jsonParser.getCurrentName()+"-"+jsonParser.getText());
 				String nodeType = (jsonParser.getCurrentName() == null ? jsonParser.getCurrentToken().toString() : jsonParser.getCurrentName() );
 				System.out.println( nodeType+"-"+jsonParser.getText());
-
+				serviceLog.info("jsonWriteToDb_MX "+nodeType+"-"+jsonParser.getText());
 				//				interaction
 				InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), jsonParser.getCurrentName(),jsonParser.getText());
 
@@ -210,8 +215,8 @@ public class JsonManager {
 								rp = null;
 								rawSimpleParams.clear();
 							}
-
-							System.out.println("\tinner: "+/*jsonParser.getCurrentToken().name() +" : "+*/nodeType+" - "+jsonParser.getText());
+							serviceLog.info("jsonWriteToDb_MX "+nodeType+" - "+jsonParser.getText()) ;
+//							System.out.println("\tinner: "+/*jsonParser.getCurrentToken().name() +" : "+*/nodeType+" - "+jsonParser.getText());
 							rp = new RawParameter(jsonParser.getCurrentName(),jsonParser.getText());
 							rawSimpleParams.add(rp);
 
@@ -226,11 +231,13 @@ public class JsonManager {
 			InteractionInstanceManager.writeInteraction2DB(inst.getInteractionInstanceId());
 
 		} catch (JsonParseException e) {
-			e.printStackTrace();
+			serviceLog.error("JSONManager_MX "+e.getMessage(),e) ;
 		} catch (JsonMappingException e) {
 			e.printStackTrace();
+			serviceLog.error("JSONManager_MX "+e.getMessage(),e) ;
 		} catch (IOException e) {
 			e.printStackTrace();
+			serviceLog.error("JSONManager_MX "+e.getMessage(),e) ;
 		}
 
 		// write      

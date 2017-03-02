@@ -28,7 +28,7 @@ import rs.telenor.intrep.db.tables.InteractionManager;
 public class IRCep extends FunctionExecutor {
  
 	private static final Logger serviceLog = Logger
-            .getLogger(ConnectionManager.class);
+            .getLogger(IRCep.class);
 	
     /**
      * The initialization method for SinFunctionExtension, this method will be called before the other methods
@@ -54,6 +54,7 @@ public class IRCep extends FunctionExecutor {
         }
         
         InteractionManager.getInteractionHierarchy();
+        serviceLog.info("IM_MX "+new Boolean(InteractionManager.interactionHierarchy.containsKey(60))) ;
     }
  
     /**
@@ -71,16 +72,18 @@ public class IRCep extends FunctionExecutor {
     	int interactionTypeID = (int) data[0];	
     	String interactionDateTime = (String) data[1];	
     	int interactionSystem = (int) data[2];
-    	String parameters  = (String) data[3];	
+    	String parameters  = (String) data[3];
+    	
+    	serviceLog.info("START_MX") ;
     	
     	try {
 			inst = InteractionInstanceManager.createInteractionInstance(interactionTypeID, interactionDateTime, interactionSystem);
-			
+			serviceLog.info("interaction_MX "+inst.getInteractionInstanceId()) ;
 //			write JSONtoDB
 			JsonManager.jsonWriteToDb(parameters, inst);
 				
 		} catch (SQLException e) {
-			serviceLog.error(e.getMessage(),e) ;
+			serviceLog.error("IRCEP_MX "+e.getMessage(),e) ;
 		}
     	
         return inst.getInteractionInstanceId();
