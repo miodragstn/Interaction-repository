@@ -5,6 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import org.apache.log4j.Logger;
+
 import rs.telenor.intrep.db.ConnectionManager;
 import rs.telenor.journeyexperience.beans.JourneyExperience;
 import rs.telenor.journeyexperience.beans.JourneyInteraction;
@@ -14,6 +17,11 @@ public class JourneyExperienceManager {
 	
 	private static Connection conn;
 	
+	public static String getJourneyExperienceMessageCEP(Long interactionInstance, Logger log) throws SQLException {
+		log.info("JourneyExperienceMessage_MX"+interactionInstance);
+		return getJourneyExperienceMessage(interactionInstance);
+		
+	}
 	public static String getJourneyExperienceMessage(Long interactionInstance) throws SQLException {
 		if (conn == null) conn = ConnectionManager.getInstance().getConnection();
 		
