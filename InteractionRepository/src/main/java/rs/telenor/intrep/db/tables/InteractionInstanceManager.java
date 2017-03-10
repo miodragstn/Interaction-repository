@@ -333,7 +333,7 @@ public class InteractionInstanceManager {
 					actionDetailOK = checkConditions(ad.getConditionSets(), intInstance); //Proveri da li je uslov za ActionDetail ispunjen
 				}
 				if (actionDetailOK) { //Ako jeste, primeni akciju
-					journeyActionId = ad.getJourneyActionId(); 
+					journeyActionId = ad.getActionParamId(); 
 					switch (journeyActionId) { //O kojoj se akciji radi
 					case 1: journeyInstance.setJourneyId(ad.getActionParamValueInt()); //Switch journey
 					break;
@@ -375,9 +375,11 @@ public class InteractionInstanceManager {
 						cp = inst.getComplexParams().get(p.getParentParamName());
 						if (cp != null) {
 							tmpResult = true;
+							scope = sc.getScope();
+							if (scope.equals("ANY")) tmpResult = false;
+							else tmpResult = true;
 							for (HashMap<String, SimpleParameter> simpleParams : cp.getSimpleParams()) {
-								sp = simpleParams.get(sc.getParameterName());
-								scope = sc.getScope();
+								sp = simpleParams.get(sc.getParameterName());								
 								if (scope.equals("ANY")) tmpResult = tmpResult | checkSimpleCondition(sp, sc); //Ako je scope za simple condition ANY, onda bilo koja true vrednost simple condition-a za instance simple parametra unutar kompleksnog parametra daje rezultat true 
 								else tmpResult = tmpResult & checkSimpleCondition(sp, sc); //inace svi simple conditioni za sve instance simple parametra unutar complex parametra moraju davati true				
 							}

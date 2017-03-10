@@ -264,6 +264,7 @@ public class InteractionManager {
 
 					journeyActionDetailId = rsJourneyActionDetails.getInt("JOURNEY_ACTION_DETAILS_ID");						
 					jad = new JourneyActionDetail(journeyActionDetailId, journeyActionId);
+					jad.setActionParamId(rsJourneyActionDetails.getInt("ACTION_PARAM_ID"));
 					journeyActionParamValueType = rsJourneyActionDetails.getInt("ACTION_PARAM_VALUE_TYPE");
 					switch(journeyActionParamValueType) {
 					case 1: jad.setJourneyActionValueType(ParameterType.ValueString);

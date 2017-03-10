@@ -6,6 +6,7 @@ public class JourneyActionDetail {
 	int journeyActionDetailId;
 	int journeyActionId;
 	int conditionDefId;
+	int actionParamId;
 	ParameterType journeyActionValueType;
 	String actionParamValueString;
 	int actionParamValueInt;
@@ -40,6 +41,15 @@ public class JourneyActionDetail {
 
 	public void setConditionDefId(int conditionDefId) {
 		this.conditionDefId = conditionDefId;
+	}
+		
+
+	public int getActionParamId() {
+		return actionParamId;
+	}
+
+	public void setActionParamId(int actionParamId) {
+		this.actionParamId = actionParamId;
 	}
 
 	public ParameterType getJourneyActionValueType() {
