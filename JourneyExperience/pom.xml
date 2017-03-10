@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>rs.telenor.journeyexperience</groupId>
   <artifactId>JourneyExperience</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.3</version>
   <dependencies>
   	<dependency>
 		 <groupId>rs.telenor.intrep</groupId>
