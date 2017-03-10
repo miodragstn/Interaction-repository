@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>rs.telenor.intrep</groupId>
   <artifactId>InteractionRepository</artifactId>
-  <version>0.0.8</version>
+  <version>0.0.9</version>
   <packaging>jar</packaging>
   
   <properties>

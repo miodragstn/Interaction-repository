@@ -7,7 +7,7 @@
   	<dependency>
 		 <groupId>rs.telenor.intrep</groupId>
 		  <artifactId>InteractionRepository</artifactId>
-		  <version>0.0.8</version>
+		  <version>0.0.9</version>
  	</dependency>
  	</dependencies>
  	<build>
