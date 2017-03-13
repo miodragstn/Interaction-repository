@@ -210,7 +210,7 @@ public class InteractionInstanceManager {
 											"WHERE JOURNEY_IDENTIFIER_PARAM_ID = ? " +
 											"AND JOURNEY_IDENTIFIER_VALUE = ? " +
 											"AND JOURNEY_ID = ? " +
-											"AND JOURNEY_STATUS_ID NOT IN (3,4,5)";
+											"AND JOURNEY_STATUS_ID NOT IN (4,5)";
 				
 		
 		ResultSet rsJourneys = null;
