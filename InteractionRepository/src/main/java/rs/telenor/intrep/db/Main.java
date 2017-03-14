@@ -148,8 +148,33 @@ public class Main {
 //			InteractionInstanceManager.writeInteraction2DB(inst.getInteractionInstanceId());
 //			
 //			//Interakcija 67
-//			inst = InteractionInstanceManager.createInteractionInstance(67, "2017-02-21 10:00:10", 7);
-//			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "1060");
+			inst = InteractionInstanceManager.createInteractionInstance(67, "2017-02-21 10:00:10", 7);
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "1090");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "sessionId", "9999999999");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "role", "customer");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "channel", "web");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "journeyFacingMsisdn", "38163530360");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "deliveryMethod", "sto");
+			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "paymentMethod", "onDelivery");
+			InteractionInstanceManager.addComplexParameter(inst.getInteractionInstanceId(), "basketItems");
+			rawSimpleParams = new ArrayList<RawParameter>();			
+			rp = new RawParameter("msisdn", "38163123456");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("existingCustomer", "false");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("tmCode", "247");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("deviceId", "10");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("devicePayment", "cosmos");
+			rawSimpleParams.add(rp);
+			rp = new RawParameter("additionalTerms", "true");
+			rawSimpleParams.add(rp);
+			InteractionInstanceManager.addSimpleParamToComplex(inst, "basketItems", rawSimpleParams);
+			InteractionInstanceManager.findJourney(inst);
+			InteractionInstanceManager.writeInteraction2DB(inst.getInteractionInstanceId());
+//			inst = InteractionInstanceManager.createInteractionInstance(18, "2017-02-22 10:00:10", 2);
+//			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "1070");
 //			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "sessionId", "9999999999");
 //			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "role", "customer");
 //			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "channel", "web");
@@ -173,31 +198,6 @@ public class Main {
 //			InteractionInstanceManager.addSimpleParamToComplex(inst, "basketItems", rawSimpleParams);
 //			InteractionInstanceManager.findJourney(inst);
 //			InteractionInstanceManager.writeInteraction2DB(inst.getInteractionInstanceId());
-			inst = InteractionInstanceManager.createInteractionInstance(18, "2017-02-22 10:00:10", 2);
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "basketId", "1070");
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "sessionId", "9999999999");
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "role", "customer");
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "channel", "web");
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "journeyFacingMsisdn", "38163530360");
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "deliveryMethod", "sto");
-			InteractionInstanceManager.addSimpleParameter(inst.getInteractionInstanceId(), "paymentMethod", "onDelivery");
-			InteractionInstanceManager.addComplexParameter(inst.getInteractionInstanceId(), "basketItems");
-			rawSimpleParams = new ArrayList<RawParameter>();			
-			rp = new RawParameter("msisdn", "38163123456");
-			rawSimpleParams.add(rp);
-			rp = new RawParameter("existingCustomer", "true");
-			rawSimpleParams.add(rp);
-			rp = new RawParameter("tmCode", "247");
-			rawSimpleParams.add(rp);
-			rp = new RawParameter("deviceId", "10");
-			rawSimpleParams.add(rp);
-			rp = new RawParameter("devicePayment", "cosmos");
-			rawSimpleParams.add(rp);
-			rp = new RawParameter("additionalTerms", "true");
-			rawSimpleParams.add(rp);
-			InteractionInstanceManager.addSimpleParamToComplex(inst, "basketItems", rawSimpleParams);
-			InteractionInstanceManager.findJourney(inst);
-			InteractionInstanceManager.writeInteraction2DB(inst.getInteractionInstanceId());
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -329,6 +329,7 @@ public class InteractionInstanceManager {
 		if (ji.getJourneyActionId() > 0) { //Da li postoji neka akcija koja je vezana za JourneyInteraction
 			Boolean actionDetailOK = true;
 			for (JourneyActionDetail ad : ji.getActionDetails()) { //Pokupi sve korake koje treba izvrsiti
+				actionDetailOK = true;
 				if (ad.getConditionDefId() > 0) { //Da li neki uslov treba da bude ispunjen za ActionDetail
 					actionDetailOK = checkConditions(ad.getConditionSets(), intInstance); //Proveri da li je uslov za ActionDetail ispunjen
 				}
