@@ -107,61 +107,64 @@ public class JourneyExperienceManager {
 			pstJourneyExperience.setLong(1, interactionInstance);
 			if (pstJourneyExperience.execute()) {
 				rsJourneyExperience = pstJourneyExperience.getResultSet();
-				//Priprema objekta iz kojeg æe se napraviti poruka
-				while (rsJourneyExperience.next()) {
-					if (je == null) {
-						je = new JourneyExperience();						
-					}
-					if (rsJourneyExperience.getInt("COMPONENT_ID") == 67) {
-						je.setBrand("telenorSerbia");
-						je.setChannel(rsJourneyExperience.getString("CHANNEL"));
-						if (rsJourneyExperience.getString("JOURNEY_FACING_MSISDN") != "") je.setMobileNumber(rsJourneyExperience.getString("JOURNEY_FACING_MSISDN"));
-						else je.setMobileNumber(rsJourneyExperience.getString("MSISDN"));
-						delivery = rsJourneyExperience.getString("DELIVERY_METHOD");
-						je.setJourneyName(rsJourneyExperience.getString("JOURNEY_NAME"));
-						ji = new JourneyInteraction();
-						ji.setInteractionTypeId(rsJourneyExperience.getInt("COMPONENT_ID"));
-						ji.setAgentUsername("NULL");
-						ji.setInteractionDate(rsJourneyExperience.getString("INTERACTION_DATE"));
-						je.getInteractions().add(ji);
-					}
-					else
-						if (rsJourneyExperience.getInt("COMPONENT_ID") == 18) {																					
+				if (rsJourneyExperience.isBeforeFirst()) {
+					//Priprema objekta iz kojeg æe se napraviti poruka
+					while (rsJourneyExperience.next()) {
+						if (je == null) {
+							je = new JourneyExperience();						
+						}
+						if (rsJourneyExperience.getInt("COMPONENT_ID") == 67) {
+							je.setBrand("telenorSerbia");
+							je.setChannel(rsJourneyExperience.getString("CHANNEL"));
+							if (rsJourneyExperience.getString("JOURNEY_FACING_MSISDN") != "") je.setMobileNumber(rsJourneyExperience.getString("JOURNEY_FACING_MSISDN"));
+							else je.setMobileNumber(rsJourneyExperience.getString("MSISDN"));
+							delivery = rsJourneyExperience.getString("DELIVERY_METHOD");
+							je.setJourneyName(rsJourneyExperience.getString("JOURNEY_NAME"));
 							ji = new JourneyInteraction();
 							ji.setInteractionTypeId(rsJourneyExperience.getInt("COMPONENT_ID"));
 							ji.setAgentUsername("NULL");
 							ji.setInteractionDate(rsJourneyExperience.getString("INTERACTION_DATE"));
-							if (delivery.equalsIgnoreCase("sto")) ji.setAgentType("Courier");
-							else ji.setAgentType("Agent");
 							je.getInteractions().add(ji);
 						}
-				}
-				//Kreiranje poruke
-				message = "{ \"brand\": \"telenorSerbia\", \n" +
-						  "\"contact\": { " +
-						  "\"mobileNumber\": " + je.getMobileNumber() + ", \n" +
-						  "\"embeddedData\": {\n" +
-						  "\"Journey\": \"" + je.getJourneyName() + "\",\n" +
-						 // "\"Channel\": \"" + je.getChannel() + "\"\n" +
-						  "}, \n" +
-						  "\"interactions\": {\n" +
-						  "\"" + je.getInteractions().get(0).getInteractionTypeId() + "\": {\n" +
-						  "\"Date_Time\": \"" + je.getInteractions().get(0).getInteractionDate() + "\",\n" +
-						  "\"Channel\": \"" + je.getChannel() + "\"\n" +
-						  "\"Agent_Username\": \"\",\n" +
-						  "}, \n" +
-						  "\"" + je.getInteractions().get(1).getInteractionTypeId() + "\": {\n" +
-						  "\"Date_Time\": \"" + je.getInteractions().get(1).getInteractionDate() + "\",\n" +
-						  "\"Channel\": \"retail\"\n" +
-						  "\"Agent_Username\": \"\",\n" +
-						  "\"Agent_Type\": \"" + je.getInteractions().get(1).getAgentType() + "\"\n" + 
-						  "}\n" +
-						  "}\n" +
-						  "}\n" +
-						  "}\n" ;
-				return message;  
-						  
+						else
+							if (rsJourneyExperience.getInt("COMPONENT_ID") == 18) {																					
+								ji = new JourneyInteraction();
+								ji.setInteractionTypeId(rsJourneyExperience.getInt("COMPONENT_ID"));
+								ji.setAgentUsername("NULL");
+								ji.setInteractionDate(rsJourneyExperience.getString("INTERACTION_DATE"));
+								if (delivery.equalsIgnoreCase("sto")) ji.setAgentType("Courier");
+								else ji.setAgentType("Agent");
+								je.getInteractions().add(ji);
+							}
+					}
+					//Kreiranje poruke
+					message = "{ \"brand\": \"telenorSerbia\", \n" +
+							"\"contact\": { " +
+							"\"mobileNumber\": " + je.getMobileNumber() + ", \n" +
+							"\"embeddedData\": {\n" +
+							"\"Journey\": \"" + je.getJourneyName() + "\",\n" +
+							// "\"Channel\": \"" + je.getChannel() + "\"\n" +
+							"}, \n" +
+							"\"interactions\": {\n" +
+							"\"" + je.getInteractions().get(0).getInteractionTypeId() + "\": {\n" +
+							"\"Date_Time\": \"" + je.getInteractions().get(0).getInteractionDate() + "\",\n" +
+							"\"Channel\": \"" + je.getChannel() + "\"\n" +
+							"\"Agent_Username\": \"\",\n" +
+							"}, \n" +
+							"\"" + je.getInteractions().get(1).getInteractionTypeId() + "\": {\n" +
+							"\"Date_Time\": \"" + je.getInteractions().get(1).getInteractionDate() + "\",\n" +
+							"\"Channel\": \"retail\"\n" +
+							"\"Agent_Username\": \"\",\n" +
+							"\"Agent_Type\": \"" + je.getInteractions().get(1).getAgentType() + "\"\n" + 
+							"}\n" +
+							"}\n" +
+							"}\n" +
+							"}\n" ;
+					return message;  
+				}		  
+				else return "";
 			}
+
 			else return "";
 		}
 		finally {
