@@ -142,15 +142,17 @@ public class JourneyExperienceManager {
 						  "\"mobileNumber\": " + je.getMobileNumber() + ", \n" +
 						  "\"embeddedData\": {\n" +
 						  "\"Journey\": \"" + je.getJourneyName() + "\",\n" +
-						  "\"Channel\": \"" + je.getChannel() + "\"\n" +
+						 // "\"Channel\": \"" + je.getChannel() + "\"\n" +
 						  "}, \n" +
 						  "\"interactions\": {\n" +
 						  "\"" + je.getInteractions().get(0).getInteractionTypeId() + "\": {\n" +
 						  "\"Date_Time\": \"" + je.getInteractions().get(0).getInteractionDate() + "\",\n" +
+						  "\"Channel\": \"" + je.getChannel() + "\"\n" +
 						  "\"Agent_Username\": \"\",\n" +
 						  "}, \n" +
 						  "\"" + je.getInteractions().get(1).getInteractionTypeId() + "\": {\n" +
 						  "\"Date_Time\": \"" + je.getInteractions().get(1).getInteractionDate() + "\",\n" +
+						  "\"Channel\": \"retail\"\n" +
 						  "\"Agent_Username\": \"\",\n" +
 						  "\"Agent_Type\": \"" + je.getInteractions().get(1).getAgentType() + "\"\n" + 
 						  "}\n" +
