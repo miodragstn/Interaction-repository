@@ -263,25 +263,30 @@ public class InteractionInstanceManager {
 				}
 				//Sad ispitujemo da li ova interakcija ispunjava uslove da journey pocne, ako nije poceo, ili da nastavi.
 				if (journeyInstance == null && ji.getPreviousStep() == 0) { //ako je ovo prva interakcija u journey-ju
-					if (ji.getConditionDefId() > 0 && !journeysProcessed.containsKey(ji.getJourneyId()) && checkConditions(ji.getConditionSet(), intInstance)) { //Ako postoje uslovi na parmetarskom nivou, proveri ih i tek onda moze journey da se instancira
-						journeyInstance = new JourneyInstance();
-						journeyInstanceId =  SurrogateKeyManager.getInstance().getKeyValue("JOURNEY");
-						journeyInstance.setJourneyInstanceId(journeyInstanceId);
-						journeyInstance.setJourneyId(ji.getJourneyId());
-						journeyInstance.setJourneyStartDt(intInstance.getInteractionDT());
-						journeyInstance.setJourneyEndDt("");
-						journeyInstance.setJourneyCurrentStep(1);
-						journeyInstance.setJourneyIdentifierParamId(ji.getJourneyIdentifierParamId());
-						journeyInstance.setJourneyIdentifierValue(journeyIndentifierParamValue);
-						journeyInstance.setCurrentInteractionInstanceId(intInstance.getInteractionInstanceId());
-						journeyInstance.setCurrentInteractionOrder(1);
-						journeyInstance.setUpdateType(1); //insert journey-ja
-						journeyInstance.setJourneyStatusId(1);
-						handleJourneyInteractionAction(ji, journeyInstance, intInstance); //Ova procedura vodi racuna o primeni akcija za JourneyInteraction 
-						intInstance.getJourneys().add(journeyInstance);
-						intInstance.getJourneyInteractionInstance().add(new JourneyInteractionInstance(journeyInstance.getJourneyInstanceId(), intInstance.getInteractionInstanceId(), intInstance.getInteractionDT(),intInstance.getComponentId(), journeyInstance.getJourneyId()));
-						journeysProcessed.put(journeyInstance.getJourneyId(), new Integer(1));
-					}
+					if (!journeysProcessed.containsKey(ji.getJourneyId())) { 
+						Boolean cond = true;
+						if (ji.getConditionDefId() > 0) cond = checkConditions(ji.getConditionSet(), intInstance); //Ako postoje uslovi na parmetarskom nivou, proveri ih i tek onda moze journey da se instancira
+						else cond = true;
+						if (cond) {
+							journeyInstance = new JourneyInstance();
+							journeyInstanceId =  SurrogateKeyManager.getInstance().getKeyValue("JOURNEY");
+							journeyInstance.setJourneyInstanceId(journeyInstanceId);
+							journeyInstance.setJourneyId(ji.getJourneyId());
+							journeyInstance.setJourneyStartDt(intInstance.getInteractionDT());
+							journeyInstance.setJourneyEndDt("");
+							journeyInstance.setJourneyCurrentStep(1);
+							journeyInstance.setJourneyIdentifierParamId(ji.getJourneyIdentifierParamId());
+							journeyInstance.setJourneyIdentifierValue(journeyIndentifierParamValue);
+							journeyInstance.setCurrentInteractionInstanceId(intInstance.getInteractionInstanceId());
+							journeyInstance.setCurrentInteractionOrder(1);
+							journeyInstance.setUpdateType(1); //insert journey-ja
+							journeyInstance.setJourneyStatusId(1);
+							handleJourneyInteractionAction(ji, journeyInstance, intInstance); //Ova procedura vodi racuna o primeni akcija za JourneyInteraction 
+							intInstance.getJourneys().add(journeyInstance);
+							intInstance.getJourneyInteractionInstance().add(new JourneyInteractionInstance(journeyInstance.getJourneyInstanceId(), intInstance.getInteractionInstanceId(), intInstance.getInteractionDT(),intInstance.getComponentId(), journeyInstance.getJourneyId()));
+							journeysProcessed.put(journeyInstance.getJourneyId(), new Integer(1));
+						}
+					}					
 				}
 				else
 				if (journeyInstance!= null && !journeysProcessed.containsKey(ji.getJourneyId()) && journeyInstance.getJourneyCurrentStep() == ji.getPreviousStep() && ji.getNextStep() > 0) {
