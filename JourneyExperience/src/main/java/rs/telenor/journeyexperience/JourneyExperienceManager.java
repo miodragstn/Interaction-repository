@@ -38,7 +38,8 @@ public class JourneyExperienceManager {
 										       "max(CHANNEL) CHANNEL,"+
 										       "max(ROLE) ROLE,"+
 										       "max(DELIVERY_METHOD) DELIVERY_METHOD,"+
-										       "max(AGENT_ID) AGENT_ID "+
+										       "max(AGENT_ID) AGENT_ID, "+
+										       "max(DEVICE_PAYMENT) DEVICE_PAYMENT " +
 										"from "+
 										"( "    +   
 										"select J.JOURNEY_INSTANCE_ID," +
@@ -72,16 +73,20 @@ public class JourneyExperienceManager {
 										       "when IP.PARAMETER_ID= 21 then IP.PARAMETER_VALUE_INT " +
 										       "else NULL " +
 										       " end AGENT_ID, " +
+											   " case "+ 
+											   " when IP.PARAMETER_ID= 19 then IP.PARAMETER_VALUE_INT " +
+											   " else NULL" +
+											   " end DEVICE_PAYMENT, "+
 										       "IP.SIMPLE_PARAM_ORD " +
 										"from journeys j " +
 										"join journey_interaction_instance jii " +
 										"on J.JOURNEY_INSTANCE_ID = JII.JOURNEY_INSTANCE_ID " +
-										"and JII.COMPONENT_ID in (67,18) " +
+										"and JII.COMPONENT_ID in (64,18) " +
 										"join INTERACTION_CLASS ic " +
 										"on J.JOURNEY_ID = IC.INTERACTION_CLASS_ID " +
 										"left join interaction_parameter ip " +
 										"on JII.INTERACTION_ID = IP.INTERACTION_ID " +
-										" and IP.PARAMETER_ID in (12, 15, 9, 8, 13, 21) " + 
+										" and IP.PARAMETER_ID in (12, 15, 9, 8, 13, 21, 19) " + 
 										"where J.CURRENT_INTERACTION_ID = ? " + 
 										" and J.JOURNEY_ID in (20, 21) " +
 										"and J.JOURNEY_STATUS_ID = 3 " +
@@ -99,6 +104,7 @@ public class JourneyExperienceManager {
 		ResultSet rsJourneyExperience = null;
 		JourneyExperience je = null;
 		String delivery = "";
+		String devicePayment = "";
 		String message = "";
 		JourneyInteraction ji;
 		try(
@@ -113,13 +119,16 @@ public class JourneyExperienceManager {
 						if (je == null) {
 							je = new JourneyExperience();						
 						}
-						if (rsJourneyExperience.getInt("COMPONENT_ID") == 67) {
-							je.setBrand("telenorSerbia");
+						if (rsJourneyExperience.getInt("COMPONENT_ID") == 64) {
+							je.setBrand("telenorrs");
 							je.setChannel(rsJourneyExperience.getString("CHANNEL"));
 							if (rsJourneyExperience.getString("JOURNEY_FACING_MSISDN") != "") je.setMobileNumber(rsJourneyExperience.getString("JOURNEY_FACING_MSISDN"));
 							else je.setMobileNumber(rsJourneyExperience.getString("MSISDN"));
 							delivery = rsJourneyExperience.getString("DELIVERY_METHOD");
-							je.setJourneyName(rsJourneyExperience.getString("JOURNEY_NAME"));
+							devicePayment = rsJourneyExperience.getString("DEVICE_PAYMENT");
+							if (rsJourneyExperience.getString("JOURNEY_NAME").equalsIgnoreCase("JOURNEY: Renewal Voice"))
+								je.setJourneyName("RS_JO_POSTPAID_RENEWAL_W_MOBILE");
+							else je.setJourneyName("RS_JO_POSTPAID_AQUISITION_W_MOBILE");
 							ji = new JourneyInteraction();
 							ji.setInteractionTypeId(rsJourneyExperience.getInt("COMPONENT_ID"));
 							ji.setAgentUsername("NULL");
@@ -131,14 +140,23 @@ public class JourneyExperienceManager {
 								ji = new JourneyInteraction();
 								ji.setInteractionTypeId(rsJourneyExperience.getInt("COMPONENT_ID"));
 								ji.setAgentUsername("NULL");
+								ji.setAgentID(rsJourneyExperience.getInt("AGENT_ID"));
 								ji.setInteractionDate(rsJourneyExperience.getString("INTERACTION_DATE"));
-								if (delivery.equalsIgnoreCase("sto")) ji.setAgentType("Courier");
-								else ji.setAgentType("Agent");
+								if (delivery.equalsIgnoreCase("sto") || delivery.equalsIgnoreCase("sto")) { 
+									ji.setAgentType("Courier");
+									ji.setDeliveryMethod("STO");
+								}
+								else { 
+									ji.setAgentType("Agent");
+									ji.setDeliveryMethod("PIS");
+								}
+								ji.setDevicePayment(rsJourneyExperience.getString("DEVICE_PAYMENT"));
+								
 								je.getInteractions().add(ji);
 							}
 					}
 					//Kreiranje poruke
-					message = "{ \"brand\": \"telenorSerbia\", \n" +
+					message = "{ \"brand\": \"telenorrs\", \n" +
 							"\"contact\": { " +
 							"\"mobileNumber\": " + je.getMobileNumber() + ", \n" +
 							"\"embeddedData\": {\n" +
@@ -155,7 +173,10 @@ public class JourneyExperienceManager {
 							"\"Date_Time\": \"" + je.getInteractions().get(1).getInteractionDate() + "\",\n" +
 							"\"Channel\": \"retail\"\n" +
 							"\"Agent_Username\": \"\",\n" +
-							"\"Agent_Type\": \"" + je.getInteractions().get(1).getAgentType() + "\"\n" + 
+							"\"Agent_ID\": \"" + je.getInteractions().get(1).getAgentID() + "\"\n" +
+							"\"Agent_Type\": \"" + je.getInteractions().get(1).getAgentType() + "\"\n" +
+							"\"Payment_Method\": \"" + je.getInteractions().get(1).getDevicePayment() + "\"\n" +
+							"\"Service_Request_Delivery\": \"" + je.getInteractions().get(1).getDeliveryMethod() + "\"\n" +
 							"}\n" +
 							"}\n" +
 							"}\n" +
