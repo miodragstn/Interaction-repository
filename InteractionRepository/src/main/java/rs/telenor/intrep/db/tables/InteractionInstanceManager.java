@@ -88,11 +88,11 @@ public class InteractionInstanceManager {
 		if (p != null) {
 			ParameterType pt = p.getParamType();
 			switch (pt) {
-			case ValueInt: 
-				sp = new SimpleParameter(p.getParamId(), name, Integer.parseInt(value));					
+			case ValueInt:				
+				sp = new SimpleParameter(p.getParamId(), name, value != "" ? Integer.parseInt(value): -1);					
 				break;
 			case ValueNumber:
-				sp = new SimpleParameter(p.getParamId(), name, Double.parseDouble(value));
+				sp = new SimpleParameter(p.getParamId(), name, value != "" ? Double.parseDouble(value): -1);
 				break;
 			case ValueString:
 				sp = new SimpleParameter(p.getParamId(), name, value);
@@ -107,10 +107,10 @@ public class InteractionInstanceManager {
 					valueDomainLookupFieldValue =  "'"+sp.getValueString()+"'";					
 					break;
 				case ValueNumber:
-					valueDomainLookupFieldValue = Double.toString(sp.getValueDouble()) ;
+					valueDomainLookupFieldValue = Double.toString(value != "" ? sp.getValueDouble():-1);
 					break;
 				case ValueInt:
-					valueDomainLookupFieldValue = Integer.toString(sp.getValueInt());
+					valueDomainLookupFieldValue = Integer.toString(value != ""? sp.getValueInt(): -1);
 				default:
 					break;
 				}
