@@ -74,7 +74,7 @@ public class JourneyExperienceManager {
 										       "else NULL " +
 										       " end AGENT_ID, " +
 											   " case "+ 
-											   " when IP.PARAMETER_ID= 19 then IP.PARAMETER_VALUE_INT " +
+											   " when IP.PARAMETER_ID= 19 then IP.PARAMETER_VALUE_STRING " +
 											   " else NULL" +
 											   " end DEVICE_PAYMENT, "+
 										       "IP.SIMPLE_PARAM_ORD " +
@@ -122,7 +122,7 @@ public class JourneyExperienceManager {
 						if (rsJourneyExperience.getInt("COMPONENT_ID") == 64) {
 							je.setBrand("telenorrs");
 							je.setChannel(rsJourneyExperience.getString("CHANNEL"));
-							if (rsJourneyExperience.getString("JOURNEY_FACING_MSISDN") != "") je.setMobileNumber(rsJourneyExperience.getString("JOURNEY_FACING_MSISDN"));
+							if (rsJourneyExperience.getString("JOURNEY_FACING_MSISDN") != "" && rsJourneyExperience.getString("JOURNEY_FACING_MSISDN") != null) je.setMobileNumber(rsJourneyExperience.getString("JOURNEY_FACING_MSISDN"));
 							else je.setMobileNumber(rsJourneyExperience.getString("MSISDN"));
 							delivery = rsJourneyExperience.getString("DELIVERY_METHOD");
 							devicePayment = rsJourneyExperience.getString("DEVICE_PAYMENT");
@@ -175,7 +175,7 @@ public class JourneyExperienceManager {
 							"\"Agent_Username\": \"\",\n" +
 							"\"Agent_ID\": \"" + je.getInteractions().get(1).getAgentID() + "\"\n" +
 							"\"Agent_Type\": \"" + je.getInteractions().get(1).getAgentType() + "\"\n" +
-							"\"Payment_Method\": \"" + je.getInteractions().get(1).getDevicePayment() + "\"\n" +
+							"\"Payment_Method\": \"" + devicePayment + "\"\n" +
 							"\"Service_Request_Delivery\": \"" + je.getInteractions().get(1).getDeliveryMethod() + "\"\n" +
 							"}\n" +
 							"}\n" +
