@@ -161,22 +161,22 @@ public class JourneyExperienceManager {
 							"\"contact\": { " +
 							"\"mobileNumber\": " + je.getMobileNumber() + ", \n" +
 							"\"embeddedData\": {\n" +
-							"\"Journey\": \"" + je.getJourneyName() + "\",\n" +
+							"\"Journey\": \"" + je.getJourneyName() + "\"\n" +
 							// "\"Channel\": \"" + je.getChannel() + "\"\n" +
 							"}, \n" +
 							"\"interactions\": {\n" +
 							"\"" + je.getInteractions().get(0).getInteractionTypeId() + "\": {\n" +
 							"\"Date_Time\": \"" + je.getInteractions().get(0).getInteractionDate() + "\",\n" +
-							"\"Channel\": \"" + je.getChannel() + "\"\n" +
-							"\"Agent_Username\": \"\",\n" +
+							"\"Channel\": \"" + je.getChannel() + "\",\n" +
+							"\"Agent_Username\": \"\"\n" +
 							"}, \n" +
 							"\"" + je.getInteractions().get(1).getInteractionTypeId() + "\": {\n" +
 							"\"Date_Time\": \"" + je.getInteractions().get(1).getInteractionDate() + "\",\n" +
-							"\"Channel\": \"retail\"\n" +
+							"\"Channel\": \"retail\",\n" +
 							"\"Agent_Username\": \"\",\n" +
-							"\"Agent_ID\": \"" + je.getInteractions().get(1).getAgentID() + "\"\n" +
-							"\"Agent_Type\": \"" + je.getInteractions().get(1).getAgentType() + "\"\n" +
-							"\"Payment_Method\": \"" + devicePayment + "\"\n" +
+							"\"Agent_ID\": \"" + je.getInteractions().get(1).getAgentID() + "\",\n" +
+							"\"Agent_Type\": \"" + je.getInteractions().get(1).getAgentType() + "\",\n" +
+							"\"Payment_Method\": \"" + devicePayment + "\",\n" +
 							"\"Service_Request_Delivery\": \"" + delivery + "\"\n" +
 							"}\n" +
 							"}\n" +
