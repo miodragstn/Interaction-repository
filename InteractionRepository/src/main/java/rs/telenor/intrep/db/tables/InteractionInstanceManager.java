@@ -348,8 +348,10 @@ public class InteractionInstanceManager {
 					case 3: journeyInstance.setJourneyStatusId(ad.getActionParamValueInt());//Commit journey
 					break;
 					case 4: journeyInstance.setJourneyStatusId(ad.getActionParamValueInt());//Successfully end journey
+							journeyInstance.setJourneyEndDt(intInstance.getInteractionDT());
 					break;
 					case 5: journeyInstance.setJourneyStatusId(ad.getActionParamValueInt());//Cancel journey
+							journeyInstance.setJourneyEndDt(intInstance.getInteractionDT());
 					break;
 					case 6: journeyInstance.setJourneyStatusId(ad.getActionParamValueInt());//Expire journey
 					break;
