@@ -125,6 +125,7 @@ public class JourneyExperienceManager {
 							if (rsJourneyExperience.getString("JOURNEY_FACING_MSISDN") != "" && rsJourneyExperience.getString("JOURNEY_FACING_MSISDN") != null) je.setMobileNumber(rsJourneyExperience.getString("JOURNEY_FACING_MSISDN"));
 							else je.setMobileNumber(rsJourneyExperience.getString("MSISDN"));
 							delivery = rsJourneyExperience.getString("DELIVERY_METHOD");
+							if (delivery.equalsIgnoreCase("sto") || delivery.equalsIgnoreCase("home")) delivery = "STO";
 							devicePayment = rsJourneyExperience.getString("DEVICE_PAYMENT");
 							if (rsJourneyExperience.getString("JOURNEY_NAME").equalsIgnoreCase("JOURNEY: Renewal Voice"))
 								je.setJourneyName("RS_JO_POSTPAID_RENEWAL_W_MOBILE");
@@ -142,7 +143,7 @@ public class JourneyExperienceManager {
 								ji.setAgentUsername("NULL");
 								ji.setAgentID(rsJourneyExperience.getInt("AGENT_ID"));
 								ji.setInteractionDate(rsJourneyExperience.getString("INTERACTION_DATE"));
-								if (delivery.equalsIgnoreCase("sto") || delivery.equalsIgnoreCase("sto")) { 
+								if (delivery.equalsIgnoreCase("sto") || delivery.equalsIgnoreCase("home")) { 
 									ji.setAgentType("Courier");
 									ji.setDeliveryMethod("STO");
 								}
@@ -176,7 +177,7 @@ public class JourneyExperienceManager {
 							"\"Agent_ID\": \"" + je.getInteractions().get(1).getAgentID() + "\"\n" +
 							"\"Agent_Type\": \"" + je.getInteractions().get(1).getAgentType() + "\"\n" +
 							"\"Payment_Method\": \"" + devicePayment + "\"\n" +
-							"\"Service_Request_Delivery\": \"" + je.getInteractions().get(1).getDeliveryMethod() + "\"\n" +
+							"\"Service_Request_Delivery\": \"" + delivery + "\"\n" +
 							"}\n" +
 							"}\n" +
 							"}\n" +
