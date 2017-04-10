@@ -145,6 +145,7 @@ public class JourneyExperienceManager {
 							else je.setMobileNumber(rsJourneyExperience.getString("MSISDN"));
 							delivery = rsJourneyExperience.getString("DELIVERY_METHOD");
 							if (delivery.equalsIgnoreCase("sto") || delivery.equalsIgnoreCase("home")) delivery = "STO";
+							else delivery = "PIS";
 							devicePayment = rsJourneyExperience.getString("DEVICE_PAYMENT");
 							if (rsJourneyExperience.getString("JOURNEY_NAME").equalsIgnoreCase("JOURNEY: Renewal Voice"))
 								je.setJourneyName("RS_JO_POSTPAID_RENEWAL_W_MOBILE");
