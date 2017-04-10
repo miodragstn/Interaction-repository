@@ -80,7 +80,7 @@ public class InteractionInstanceManager {
 		}
 		Long interactionInstanceId = null;
 		
-		interactionInstanceId =  SurrogateKeyManager.getInstance().getKeyValue("INTERACTION");		
+		interactionInstanceId =  SurrogateKeyManager.getInstance(log).getKeyValue("INTERACTION");		
 		
 		InteractionInstance interactionInstance = new InteractionInstance(interactionInstanceId, componentId, interactionDT, interactionSourceId);
 		if (interactionInstances == null) interactionInstances = new HashMap<Long, InteractionInstance>();

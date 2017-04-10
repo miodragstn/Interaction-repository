@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import rs.telenor.intrep.db.ConnectionManager;
+import org.apache.log4j.Logger;
 
 class Key {
 	String tableName;
@@ -14,16 +15,29 @@ class Key {
 }
 
 public class SurrogateKeyManager {
-	private static Connection conn = ConnectionManager.getInstance().getConnection();
+//	private static Connection conn = ConnectionManager.getInstance().getConnection();
+	private static Connection conn;
 	public static SurrogateKeyManager keyInstance = null; 
 	private HashMap<String, Key> keys;
 	
 	private SurrogateKeyManager() {	
+		if (conn == null) conn = ConnectionManager.getInstance().getConnection();
 		if (keys == null) keys = new HashMap<String, Key>();		
 	}
 	
+	private SurrogateKeyManager(Logger log) {	
+		if (conn == null) conn = ConnectionManager.getInstance().getCEPConnection(log);
+		if (keys == null) keys = new HashMap<String, Key>();		
+	}
+		
+	
 	public static SurrogateKeyManager getInstance() {
 		if (keyInstance == null) keyInstance = new SurrogateKeyManager();
+		return keyInstance;
+	}
+	
+	public static SurrogateKeyManager getInstance(Logger log) {
+		if (keyInstance == null) keyInstance = new SurrogateKeyManager(log);
 		return keyInstance;
 	}
 	
