@@ -22,8 +22,27 @@ public class JourneyExperienceManager {
 		return getJourneyExperienceMessage(interactionInstance);
 		
 	}
+	
 	public static String getJourneyExperienceMessage(Long interactionInstance) throws SQLException {
 		if (conn == null) conn = ConnectionManager.getInstance().getConnection();
+		
+		String mess;
+		
+		mess = createJourneyExperienceMessage(interactionInstance);
+		 return mess;
+	}
+	
+	public static String getJourneyExperienceMessage(Long interactionInstance, Logger log) throws SQLException {
+		if (conn == null) conn = ConnectionManager.getInstance().getCEPConnection(log);
+		
+		String mess;
+		
+		mess = createJourneyExperienceMessage(interactionInstance);
+		 return mess;
+	}
+	
+	public static String createJourneyExperienceMessage(Long interactionInstance) throws SQLException {
+//		if (conn == null) conn = ConnectionManager.getInstance().getConnection();
 		
 		String sqlJourneyExperience = 
 										"select JOURNEY_INSTANCE_ID," +

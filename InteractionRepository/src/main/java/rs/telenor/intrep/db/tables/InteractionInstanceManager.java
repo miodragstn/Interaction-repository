@@ -48,13 +48,36 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import org.apache.log4j.Logger;
 
 
 public class InteractionInstanceManager {
 	private static HashMap<Long, InteractionInstance> interactionInstances;
-	private static Connection conn = ConnectionManager.getInstance().getConnection();
+//	private static Connection conn = ConnectionManager.getInstance().getConnection();
+	
+	private static Connection conn;
 	
 	public static synchronized InteractionInstance createInteractionInstance(int componentId, String interactionDT, int interactionSourceId) throws SQLException {
+		Long interactionInstanceId = null;
+		
+		if (conn==null){
+			conn = ConnectionManager.getInstance().getConnection();
+		}
+		
+		interactionInstanceId =  SurrogateKeyManager.getInstance().getKeyValue("INTERACTION");		
+		
+		InteractionInstance interactionInstance = new InteractionInstance(interactionInstanceId, componentId, interactionDT, interactionSourceId);
+		if (interactionInstances == null) interactionInstances = new HashMap<Long, InteractionInstance>();
+		interactionInstances.put(interactionInstanceId, interactionInstance);
+		return interactionInstance;
+		
+	}
+	
+	public static synchronized InteractionInstance createInteractionInstance(int componentId, String interactionDT, int interactionSourceId, Logger log) throws SQLException {
+		
+		if (conn==null){
+			conn = ConnectionManager.getInstance().getCEPConnection(log);
+		}
 		Long interactionInstanceId = null;
 		
 		interactionInstanceId =  SurrogateKeyManager.getInstance().getKeyValue("INTERACTION");		
