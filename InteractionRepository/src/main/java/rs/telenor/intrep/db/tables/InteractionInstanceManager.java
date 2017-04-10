@@ -635,7 +635,8 @@ public class InteractionInstanceManager {
 										 "( " +
 										 "JOURNEY_INSTANCE_ID, " +
 										 "JOURNEY_ID, " +
-										 "JOURNEY_START_DATE, " +										 										 
+										 "JOURNEY_START_DATE, " +
+										 "JOURNEY_END_DATE, " + 
 										 "JOURNEY_CURRENT_STEP, " +
 										 "JOURNEY_IDENTIFIER_PARAM_ID, " +
 										 "JOURNEY_IDENTIFIER_VALUE, " +
@@ -643,7 +644,7 @@ public class InteractionInstanceManager {
 										 "CURRENT_INTERACTION_ORDER, " +
 										 "JOURNEY_STATUS_ID " +										 
 										 ")" +
-										 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+										 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			String sqlJourneysUpdate = "UPDATE JOURNEYS " +
 									 "SET CURRENT_INTERACTION_ID = ?, CURRENT_INTERACTION_ORDER = ?, JOURNEY_CURRENT_STEP = ?, JOURNEY_STATUS_ID = ?, JOURNEY_ID = ?, JOURNEY_END_DATE = ? " +
 									 "WHERE JOURNEY_INSTANCE_ID = ?";
@@ -786,12 +787,13 @@ public class InteractionInstanceManager {
 						pstJourneysInsert.setLong(1, ji.getJourneyInstanceId());
 						pstJourneysInsert.setInt(2, ji.getJourneyId());
 						pstJourneysInsert.setString(3, ji.getJourneyStartDt());
-						pstJourneysInsert.setInt(4, ji.getJourneyCurrentStep());
-						pstJourneysInsert.setInt(5, ji.getJourneyIdentifierParamId());
-						pstJourneysInsert.setString(6, ji.getJourneyIdentifierValue());
-						pstJourneysInsert.setLong(7, ji.getCurrentInteractionInstanceId());
-						pstJourneysInsert.setInt(8, ji.getCurrentInteractionOrder());
-						pstJourneysInsert.setInt(9, ji.getJourneyStatusId());
+						pstJourneysInsert.setString(4, ji.getJourneyEndDt());
+						pstJourneysInsert.setInt(5, ji.getJourneyCurrentStep());
+						pstJourneysInsert.setInt(6, ji.getJourneyIdentifierParamId());
+						pstJourneysInsert.setString(7, ji.getJourneyIdentifierValue());
+						pstJourneysInsert.setLong(8, ji.getCurrentInteractionInstanceId());
+						pstJourneysInsert.setInt(9, ji.getCurrentInteractionOrder());
+						pstJourneysInsert.setInt(10, ji.getJourneyStatusId());
 						pstJourneysInsert.execute();
 					}
 					if (ji.getUpdateType() == 2) {
