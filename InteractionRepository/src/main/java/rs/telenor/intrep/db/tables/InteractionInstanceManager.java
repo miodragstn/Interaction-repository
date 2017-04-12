@@ -5,6 +5,7 @@ import rs.telenor.intrep.db.beans.InteractionInstance;
 import rs.telenor.intrep.db.beans.JourneyActionDetail;
 import rs.telenor.intrep.db.beans.JourneyInteraction;
 import rs.telenor.intrep.db.beans.JourneyInteractionInstance;
+import rs.telenor.intrep.db.beans.NotificationInstance;
 import rs.telenor.intrep.db.beans.JourneyInstance;
 import rs.telenor.intrep.db.beans.Parameter;
 import rs.telenor.intrep.db.beans.ParameterType;
@@ -331,9 +332,10 @@ public class InteractionInstanceManager {
 	
 	static void handleJourneyInteractionAction(JourneyInteraction ji, JourneyInstance journeyInstance, InteractionInstance intInstance) {
 		int journeyActionId;
-		if (ji.getJourneyActionId() > 0) { //Da li postoji neka akcija koja je vezana za JourneyInteraction
+		if (ji.getJourneyActionId() > 0) { //Da li postoji neka akcija koja je vezana za JourneyInteraction. Iz tabele JOURNEY_INTERACTION_DEFINITION
 			Boolean actionDetailOK = true;
-			for (JourneyActionDetail ad : ji.getActionDetails()) { //Pokupi sve korake koje treba izvrsiti
+			
+			for (JourneyActionDetail ad : ji.getActionDetails()) { //Pokupi sve korake koje treba izvrsiti iz tabele JOURNEY_ACTION_DETAILS
 				actionDetailOK = true;
 				if (ad.getConditionDefId() > 0) { //Da li neki uslov treba da bude ispunjen za ActionDetail
 					actionDetailOK = checkConditions(ad.getConditionSets(), intInstance); //Proveri da li je uslov za ActionDetail ispunjen
@@ -354,6 +356,17 @@ public class InteractionInstanceManager {
 							journeyInstance.setJourneyEndDt(intInstance.getInteractionDT());
 					break;
 					case 6: journeyInstance.setJourneyStatusId(ad.getActionParamValueInt());//Expire journey
+					break;
+					case 7: int messageTypeId = ad.getActionParamValueInt(); // Ovako dodjemo do ID-a poruke. 
+							String msisdn = intInstance.getSimpleParams().get("msisdn").getValueString();
+							String msgChannel = null;
+							try {
+								msgChannel = NotificationManager.resolveMsgChannel(msisdn);
+								NotificationInstance ni = new NotificationInstance(intInstance.getInteractionInstanceId(), messageTypeId, 0,msisdn,msgChannel);
+								NotificationManager.writeNotification2DB(ni);
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
 					break;
 					}									
 				}
