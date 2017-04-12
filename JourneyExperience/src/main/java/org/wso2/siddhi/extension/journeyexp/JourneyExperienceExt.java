@@ -84,7 +84,7 @@ public class JourneyExperienceExt extends FunctionExecutor {
 
     	try {
     		long interactionIns = (long) data;
-			message = JourneyExperienceManager.getJourneyExperienceMessage(interactionIns) ;
+			message = JourneyExperienceManager.getJourneyExperienceMessage(interactionIns, serviceLog) ;
 			serviceLog.info("interaction_JE_MX "+message) ;
 				
 		} catch (SQLException e) {

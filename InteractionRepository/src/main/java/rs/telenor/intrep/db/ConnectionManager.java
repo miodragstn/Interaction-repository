@@ -71,7 +71,7 @@ public class ConnectionManager {
 			
 			if (conn == null) {
 				if (openCEPConnection(log)) {
-					serviceLog.info("Connection opened");
+					serviceLog.info("Connection opened_MX");
 					return conn;
 				}
 				else {

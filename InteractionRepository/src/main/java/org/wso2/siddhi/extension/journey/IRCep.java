@@ -53,7 +53,7 @@ public class IRCep extends FunctionExecutor {
                     ", but found " + attributeType.toString());
         }
         
-        InteractionManager.getInteractionHierarchy();
+        InteractionManager.getInteractionHierarchy(serviceLog);
         serviceLog.info("IM_MX "+new Boolean(InteractionManager.interactionHierarchy.containsKey(60))) ;
     }
  
@@ -77,7 +77,7 @@ public class IRCep extends FunctionExecutor {
     	serviceLog.info("START_MX") ;
     	
     	try {
-			inst = InteractionInstanceManager.createInteractionInstance(interactionTypeID, interactionDateTime, interactionSystem);
+			inst = InteractionInstanceManager.createInteractionInstance(interactionTypeID, interactionDateTime, interactionSystem, serviceLog);
 			serviceLog.info("interaction_MX "+inst.getInteractionInstanceId()) ;
 //			write JSONtoDB
 			JsonManager.jsonWriteToDb(parameters, inst);
