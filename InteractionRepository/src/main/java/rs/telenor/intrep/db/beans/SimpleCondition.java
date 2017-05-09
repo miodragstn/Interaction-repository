@@ -8,6 +8,10 @@ public class SimpleCondition {
 	String valueString;
 	int valueInt;
 	double valueDouble;
+	String valueDomain;
+	String valueDomainLookup;
+	String valueDomainValue;
+	ParameterType valueDomainValueType;
 	ConditionOperator operator;
 	String scope; // ALL, ANY -> ima smisla kod parametar koji imaju parent parametre, tj. ponavljaju se u interakciji - ovo odredjuje da li uslov vazi za sve parametre
 	
@@ -110,6 +114,38 @@ public class SimpleCondition {
 
 	public void setScope(String scope) {
 		this.scope = scope;
+	}
+
+	public String getValueDomain() {
+		return valueDomain;
+	}
+
+	public void setValueDomain(String valueDomain) {
+		this.valueDomain = valueDomain;
+	}
+
+	public String getValueDomainLookup() {
+		return valueDomainLookup;
+	}
+
+	public void setValueDomainLookup(String valueDomainLookup) {
+		this.valueDomainLookup = valueDomainLookup;
+	}
+
+	public String getValueDomainValue() {
+		return valueDomainValue;
+	}
+
+	public void setValueDomainValue(String valueDomainValue) {
+		this.valueDomainValue = valueDomainValue;
+	}
+
+	public ParameterType getValueDomainValueType() {
+		return valueDomainValueType;
+	}
+
+	public void setValueDomainValueType(ParameterType valueDomainValueType) {
+		this.valueDomainValueType = valueDomainValueType;
 	}
 	
 	

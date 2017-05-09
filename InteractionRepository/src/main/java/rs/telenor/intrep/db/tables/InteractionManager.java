@@ -128,7 +128,11 @@ public class InteractionManager {
 																					 			   	   			 "sc.VALUE_TYPE_ID, " + 
 																					 			   	   			 "sc.VALUE_STRING, " +
 																					 			   	   			 "sc.VALUE_NUMBER, " +
-																					 			   	   			 "sc.VALUE_INT " + 
+																					 			   	   			 "sc.VALUE_INT, " +
+																					 			   	   			 "sc.VALUE_DOMAIN, " +
+																					 			   	   			 "sc.VALUE_DOMAIN_LOOKUP, " +
+																					 			   	   			 "sc.VALUE_DOMAIN_VALUE, " +
+																					 			   	   			 "sc.VALUE_DOMAIN_VALUE_TYPE " +
 																					 			   	     "FROM JOURNEY_INTERACTION_SMPL_COND sc " +
 																					 			   	   	 "JOIN PARAMETER p " +
 																					 			   	     "ON sc.PARAMETER_ID = p.ID");
@@ -152,6 +156,7 @@ public class InteractionManager {
 				SimpleCondition sc = null;
 				ConditionOperator co = null;
 				String cop = "";
+				int valueDomainValueType;
 				while (rsJourneyInteractionSimpleCond.next()) {
 					cop = rsJourneyInteractionSimpleCond.getString("CONDITION_OPERATOR_CD");					
 					switch (cop) {
@@ -183,6 +188,20 @@ public class InteractionManager {
 					case 3: sc = new SimpleCondition(rsJourneyInteractionSimpleCond.getInt("CONDITION_ID"), rsJourneyInteractionSimpleCond.getInt("PARAMETER_ID"), rsJourneyInteractionSimpleCond.getString("PARAMETER_NAME"), co, rsJourneyInteractionSimpleCond.getDouble("VALUE_NUMBER"));
 					break;
 					}
+					if (rsJourneyInteractionSimpleCond.getString("VALUE_DOMAIN") != "") {
+						sc.setValueDomain(rsJourneyInteractionSimpleCond.getString("VALUE_DOMAIN"));
+						sc.setValueDomainLookup(rsJourneyInteractionSimpleCond.getString("VALUE_DOMAIN_LOOKUP"));
+						sc.setValueDomainValue(rsJourneyInteractionSimpleCond.getString("VALUE_DOMAIN_VALUE"));
+						valueDomainValueType = rsJourneyInteractionSimpleCond.getInt("VALUE_DOMAIN_VALUE_TYPE");
+						switch(valueDomainValueType) {							
+						case 1: sc.setValueDomainValueType(ParameterType.ValueString);
+						break;
+						case 2: sc.setValueDomainValueType(ParameterType.ValueInt);
+						break;
+						case 3: sc.setValueDomainValueType(ParameterType.ValueNumber);
+						break;
+						}
+					}
 					simpleConds.put(rsJourneyInteractionSimpleCond.getInt("CONDITION_ID"), sc);
 				}
 
@@ -199,7 +218,7 @@ public class InteractionManager {
 					if (complexConds.get(cc.getId()) == null) complexConds.put(rsJourneyInteractionComplCond.getInt("COMPL_COND_ID"), cc);
 					if (simpleConds.get(simplCondId) != null)
 					{
-						sc = simpleConds.get(simplCondId);
+						sc = simpleConds.get(simplCondId);						
 						ParameterType scValueType = simpleConds.get(simplCondId).getValueType();
 						switch (scValueType) {
 						case ValueString: sc = new SimpleCondition(simpleConds.get(simplCondId).getId(), simpleConds.get(simplCondId).getParameterId(), simpleConds.get(simplCondId).getParameterName(), simpleConds.get(simplCondId).getOperator(), simpleConds.get(simplCondId).getValueString());
@@ -210,6 +229,12 @@ public class InteractionManager {
 						break;
 						}
 						sc.setScope(scope);
+						if (simpleConds.get(simplCondId).getValueDomain() != null && simpleConds.get(simplCondId).getValueDomain() != "") {
+							sc.setValueDomain(simpleConds.get(simplCondId).getValueDomain());
+							sc.setValueDomainLookup(simpleConds.get(simplCondId).getValueDomainLookup());
+							sc.setValueDomainValue(simpleConds.get(simplCondId).getValueDomainValue());
+							sc.setValueDomainValueType(simpleConds.get(simplCondId).getValueDomainValueType());
+						}
 						complexConds.get(cc.getId()).getSimpleConditions().add(sc);
 					}
 					

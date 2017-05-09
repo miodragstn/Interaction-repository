@@ -13,7 +13,7 @@ public class NotificationManager {
 	
 	public static synchronized String resolveMsgChannel(String msisdn) throws SQLException{
 		String sqlResolveChnnl = "SELECT  nvl(REGISTRATION_DT,-1) as REGISTRATION_DT "+
-								 "FROM    SUBSCRIPTION_PROFILE p1"+
+								 "FROM    SUBSCRIPTION_PROFILE p1 "+
 								 "WHERE   MSISDN = ?";
 		
 		ResultSet rsNotif = null;
@@ -50,12 +50,11 @@ public class NotificationManager {
 							   "MESSAGE_CHANNEL_CD, "+
 							   "NOTIFICATION_DT, "+
 							   "NOTIFICATION_STATUS_ID, "+
-							   "CREATION_DT, "+
+							   "CREATION_DT "+
 							   ") "+
 							   "VALUES "+
 							   "(" +
-							   	"?,?,?,?,?,TO_CHAR(SYSDATE(),'YYYY-MM-DD HH24:MI:SS'),?,SYSDATE() "+
-							   ")";
+							   	"?,?,?,?,?,TO_CHAR(SYSDATE,'YYYY-MM-DD HH24:MI:SS'),?,TO_CHAR(SYSDATE,'YYYY-MM-DD HH24:MI:SS'))";
 			try(
 					PreparedStatement psInstNotif = conn.prepareStatement(ntfInsrt);
 					){
@@ -64,7 +63,7 @@ public class NotificationManager {
 				psInstNotif.setString(3, nInst.getMsisdn());
 				psInstNotif.setInt(4, nInst.getMssgTypeId());
 				psInstNotif.setString(5, nInst.getMssgChnnlCd());
-				psInstNotif.setInt(7, nInst.getNotificationStatusId());
+				psInstNotif.setInt(6, nInst.getNotificationStatusId());
 				psInstNotif.execute();
 			}
 		}
