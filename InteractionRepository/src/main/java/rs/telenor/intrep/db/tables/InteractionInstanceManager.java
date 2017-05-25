@@ -424,9 +424,10 @@ public class InteractionInstanceManager {
 		ComplexParameter cp;
 		String scope;
 		for (ConditionSet cs : condSets) {
-			csResult = false;
+			//csResult = false;
+			ccResult = true;
 			for (ComplexCondition cc : cs.getComplexConds()) {
-				ccResult = true;
+				//ccResult = true;
 				for (SimpleCondition sc : cc.getSimpleConditions()) {
 					Interaction i = InteractionManager.interactionHierarchy.get(inst.getComponentId());
 					Parameter p = i.getParameters().get(sc.getParameterName()); //Nadji parametar u kontekstu interakcije
