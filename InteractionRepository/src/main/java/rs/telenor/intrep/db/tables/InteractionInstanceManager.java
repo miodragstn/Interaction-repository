@@ -424,10 +424,10 @@ public class InteractionInstanceManager {
 		ComplexParameter cp;
 		String scope;
 		for (ConditionSet cs : condSets) {
-			//csResult = false;
-			ccResult = true;
+			csResult = false;
+			//ccResult = true;
 			for (ComplexCondition cc : cs.getComplexConds()) {
-				//ccResult = true;
+				ccResult = true;
 				for (SimpleCondition sc : cc.getSimpleConditions()) {
 					Interaction i = InteractionManager.interactionHierarchy.get(inst.getComponentId());
 					Parameter p = i.getParameters().get(sc.getParameterName()); //Nadji parametar u kontekstu interakcije
@@ -448,14 +448,16 @@ public class InteractionInstanceManager {
 								if (scope.equals("ANY")) tmpResult = tmpResult | checkSimpleCondition(sp, sc); //Ako je scope za simple condition ANY, onda bilo koja true vrednost simple condition-a za instance simple parametra unutar kompleksnog parametra daje rezultat true 
 								else tmpResult = tmpResult & checkSimpleCondition(sp, sc); //inace svi simple conditioni za sve instance simple parametra unutar complex parametra moraju davati true				
 							}
-							ccResult = ccResult & tmpResult; //Complex condition je Bool-ov proizvod simple condition-a
+							ccResult = ccResult & tmpResult; //Complex condition je Bool-ov proizvod simple condition-a							
 						}
 						else ccResult = ccResult & false;
 					}
 				}
 				csResult = csResult | ccResult; //Condition set je Bool-ov zbir complex condition-a
+				if (csResult) break; //Kad je csResult jednom postao true, treba izaci iz petlje njegovih complex condition-a, jer su oni u OR uslovu za condition set
 			}
 			result = result & csResult;	//Konacan rezultat je Bool-ov proizvod condition set-ova
+			if (!result) break; //Kad result u okviru petlje condition set-ova postane false, nema sta dalje da se iterira po petlji condition set-ova, jer su oni vezani AND uslovom u okviru condition definition-a
 		}
 		
 		return result;
