@@ -18,6 +18,7 @@ public class NotificationManager {
 		
 		ResultSet rsNotif = null;
 		String regDate = null;
+		String retValue = "PUSH";
 		
 		try(PreparedStatement pstNotif = conn.prepareStatement(sqlResolveChnnl, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)){
 			
@@ -27,6 +28,7 @@ public class NotificationManager {
 			if (rsNotif.isBeforeFirst()) {
 				rsNotif.first();
 				regDate = rsNotif.getString("REGISTRATION_DT");
+				retValue = (regDate.equalsIgnoreCase("-1")) ? "SMS" : "PUSH";
 			}
 		}catch (SQLException e) {
 				// TODO Auto-generated catch block
@@ -35,7 +37,7 @@ public class NotificationManager {
 				if (rsNotif != null) rsNotif.close();
 			}
 		
-		return (regDate == "-1") ? "SMS" : "PUSH";
+		return retValue;
 		
 	}
 
