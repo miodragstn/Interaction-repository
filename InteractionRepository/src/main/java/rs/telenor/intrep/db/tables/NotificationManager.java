@@ -13,7 +13,7 @@ public class NotificationManager {
 //	private static Connection conn = ConnectionManager.getInstance().getConnection();
 	private static Connection conn;
 	
-	public static synchronized String resolveMsgChannel(String msisdn) throws SQLException{
+	public static String resolveMsgChannel(String msisdn) throws SQLException{
 		
 		if (conn==null){
 			conn = ConnectionManager.getInstance().getConnection();
@@ -48,7 +48,7 @@ public class NotificationManager {
 		
 	}
 	
-public static synchronized String resolveMsgChannel(String msisdn, Logger log) throws SQLException{
+public static String resolveMsgChannel(String msisdn, Logger log) throws SQLException{
 		
 		if (conn==null){
 			conn = ConnectionManager.getInstance().getCEPConnection(log);
@@ -83,7 +83,7 @@ public static synchronized String resolveMsgChannel(String msisdn, Logger log) t
 		
 	}
 
-	public static synchronized void writeNotification2DB(NotificationInstance nInst) throws SQLException{
+	public static void writeNotification2DB(NotificationInstance nInst) throws SQLException{
 		if(nInst != null){
 //			String ntfInsrt = "INSERT INTO IR.NOTIFICATION "+
 //							   "("+
@@ -115,7 +115,7 @@ public static synchronized String resolveMsgChannel(String msisdn, Logger log) t
 		
 	}
 	
-	public static synchronized void writeNotification2DB(NotificationInstance nInst, Logger log) throws SQLException{
+	public static void writeNotification2DB(NotificationInstance nInst, Logger log) throws SQLException{
 		if(nInst != null){
 //			String ntfInsrt = "INSERT INTO IR.NOTIFICATION "+
 //							   "("+

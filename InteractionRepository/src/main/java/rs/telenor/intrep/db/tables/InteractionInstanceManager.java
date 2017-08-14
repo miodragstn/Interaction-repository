@@ -826,7 +826,7 @@ public class InteractionInstanceManager {
 		return true;
 	}
 	
-	public static synchronized void writeInteraction2DB(Long interactionInstanceId) throws SQLException {
+	public static void writeInteraction2DB(Long interactionInstanceId) throws SQLException {
 		InteractionInstance inst = interactionInstances.get(interactionInstanceId);
 		if (inst != null) {
 			String sqlInt = "INSERT INTO IR.INTERACTIONS "+
