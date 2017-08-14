@@ -57,6 +57,7 @@ public class InteractionInstanceManager {
 //	private static Connection conn = ConnectionManager.getInstance().getConnection();
 	
 	private static Connection conn;
+	private static Logger log;
 	
 	public static synchronized InteractionInstance createInteractionInstance(int componentId, String interactionDT, int interactionSourceId) throws SQLException {
 		Long interactionInstanceId = null;
@@ -76,9 +77,13 @@ public class InteractionInstanceManager {
 	
 	public static synchronized InteractionInstance createInteractionInstance(int componentId, String interactionDT, int interactionSourceId, Logger log) throws SQLException {
 		
+		InteractionInstanceManager.log = log; 
+		
 		if (conn==null){
 			conn = ConnectionManager.getInstance().getCEPConnection(log);
 		}
+		
+		
 		Long interactionInstanceId = null;
 		
 		interactionInstanceId =  SurrogateKeyManager.getInstance(log).getKeyValue("INTERACTION");		
@@ -383,7 +388,8 @@ public class InteractionInstanceManager {
 						String msisdn = intInstance.getSimpleParams().get("msisdn").getValueString();
 						String msgChannel = null;
 						try {
-							msgChannel = NotificationManager.resolveMsgChannel(msisdn);
+//							msgChannel = NotificationManager.resolveMsgChannel(msisdn);
+							msgChannel = NotificationManager.resolveMsgChannel(msisdn, log);
 							NotificationInstance ni = new NotificationInstance(intInstance.getInteractionInstanceId(), messageTypeId, 0,msisdn,msgChannel);
 							NotificationManager.writeNotification2DB(ni);
 						} catch (SQLException e) {
