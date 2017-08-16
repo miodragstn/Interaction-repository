@@ -141,7 +141,7 @@ public class JsonManager {
 	public static void jsonWriteToDb(String JSONData, InteractionInstance inst) throws SQLException{
 		
     	serviceLog.info("jsonWriteToDb_MX"+JSONData);
-		HashMap<Integer, Interaction> interactions = InteractionManager.getInteractionHierarchy();
+		HashMap<Integer, Interaction> interactions = InteractionManager.getInteractionHierarchy(serviceLog);
 		String dataStr = "{"+JSONData+"}";
 		try {
 			JsonFactory jasonFactory = new JsonFactory();
@@ -150,7 +150,7 @@ public class JsonManager {
 //			JsonParser jsonParser = jasonFactory.createJsonParser(new File("example.json"));
 			JsonParser jsonParser = jasonFactory.createJsonParser(dataStr);
 
-			System.out.println("looping\n");
+//			System.out.println("looping\n");
 			while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
 
 				//get the current token

@@ -78,10 +78,10 @@ public class IRCep extends FunctionExecutor {
     	
     	try {
 			inst = InteractionInstanceManager.createInteractionInstance(interactionTypeID, interactionDateTime, interactionSystem, serviceLog);
-			serviceLog.info("interaction_MX "+inst.getInteractionInstanceId()) ;
+			serviceLog.info("interaction_MX "+inst.getInteractionInstanceId() + " started") ;
 //			write JSONtoDB
 			JsonManager.jsonWriteToDb(parameters, inst);
-				
+			serviceLog.info("interaction_MX "+inst.getInteractionInstanceId() + " finished") ;
 		} catch (SQLException e) {
 			serviceLog.error("IRCEP_MX "+e.getMessage(),e) ;
 		}
