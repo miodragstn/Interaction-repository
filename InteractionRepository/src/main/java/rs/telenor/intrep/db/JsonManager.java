@@ -226,9 +226,11 @@ public class JsonManager {
 					}
 				}
 			}
-			
+			serviceLog.info("jsonWriteToDb_MX write parameters finished");
 			InteractionInstanceManager.findJourney(inst);
+			serviceLog.info("jsonWriteToDb_MX findJourney finished");
 			InteractionInstanceManager.writeInteraction2DB(inst.getInteractionInstanceId());
+			serviceLog.info("jsonWriteToDb_MX writeInteraction2DB finished");
 
 		} catch (JsonParseException e) {
 			serviceLog.error("JSONManager_MX "+e.getMessage(),e) ;
