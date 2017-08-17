@@ -384,14 +384,18 @@ public class InteractionInstanceManager {
 								journeyInstance.setJourneyEndDt(intInstance.getInteractionDT());
 					break;
 					case 3: 
+						log.info("writeNotification2DB_MX  started");
 						int messageTypeId = ad.getActionParamValueInt(); // Ovako dodjemo do ID-a poruke. 
 						String msisdn = intInstance.getSimpleParams().get("msisdn").getValueString();
 						String msgChannel = null;
 						try {
 //							msgChannel = NotificationManager.resolveMsgChannel(msisdn);
 							msgChannel = NotificationManager.resolveMsgChannel(msisdn, log);
+							log.info("resolveMsgChannel_MX  finished");
 							NotificationInstance ni = new NotificationInstance(intInstance.getInteractionInstanceId(), messageTypeId, 0,msisdn,msgChannel);
+							
 							NotificationManager.writeNotification2DB(ni);
+							log.info("writeNotification2DB_MX  finished");
 						} catch (SQLException e) {
 							e.printStackTrace();
 						}

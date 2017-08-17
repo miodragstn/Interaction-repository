@@ -115,7 +115,7 @@ public static String resolveMsgChannel(String msisdn, Logger log) throws SQLExce
 		
 	}
 	
-	public static void writeNotification2DB(NotificationInstance nInst, Logger log) throws SQLException{
+	public static void writeNotification2DB(NotificationInstance nInst, Logger log) throws SQLException{		
 		if(nInst != null){
 //			String ntfInsrt = "INSERT INTO IR.NOTIFICATION "+
 //							   "("+
@@ -145,6 +145,7 @@ public static String resolveMsgChannel(String msisdn, Logger log) throws SQLExce
 				psInstNotif.setString(5, nInst.getMssgChnnlCd());
 //				psInstNotif.setInt(6, nInst.getNotificationStatusId());
 				psInstNotif.execute();
+				
 			}
 		}
 		
