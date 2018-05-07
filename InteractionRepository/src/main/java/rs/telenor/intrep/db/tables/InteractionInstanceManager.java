@@ -298,13 +298,17 @@ public class InteractionInstanceManager {
 						if (ji.getConditionDefId() > 0) cond = checkConditions(ji.getConditionSet(), intInstance); //Ako postoje uslovi na parmetarskom nivou, proveri ih i tek onda moze journey da se instancira
 						else cond = true;
 						if (cond) {
+							int journeyNextStep = 1;
 							journeyInstance = new JourneyInstance();
 							journeyInstanceId =  SurrogateKeyManager.getInstance().getKeyValue("JOURNEY");
 							journeyInstance.setJourneyInstanceId(journeyInstanceId);
 							journeyInstance.setJourneyId(ji.getJourneyId());
 							journeyInstance.setJourneyStartDt(intInstance.getInteractionDT());
 							journeyInstance.setJourneyEndDt(intInstance.getInteractionDT());
-							journeyInstance.setJourneyCurrentStep(1);
+							if (ji.getNextStep() > 0) {
+								journeyNextStep = ji.getNextStep(); 
+							}
+							journeyInstance.setJourneyCurrentStep(journeyNextStep);
 							journeyInstance.setJourneyIdentifierParamId(ji.getJourneyIdentifierParamId());
 							journeyInstance.setJourneyIdentifierValue(journeyIndentifierParamValue);
 							journeyInstance.setCurrentInteractionInstanceId(intInstance.getInteractionInstanceId());
