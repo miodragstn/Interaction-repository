@@ -14,11 +14,13 @@ public class ConnectionManager {
 	public static ConnectionManager instance = null;
 	
 	private static final String USERNAME = "IR";
-//	private static final String PASSWORD = "Telen_20161017";
-	private static final String PASSWORD = "Telen_20161125";
+//	Pass za test
+	private static final String PASSWORD = "Telen_20161017";
+//	Pass za produkciju
+//	private static final String PASSWORD = "Telen_20161125";
 	private static final String CONN_STRING =
-//			"jdbc:oracle:thin:@intrep-ora-d-01.telenor.rs:2016/intrep.dev";
-			"jdbc:oracle:thin:@intrep-ora-p-01.telenor.rs:2016/intrep";
+			"jdbc:oracle:thin:@intrep-ora-d-01.telenor.rs:2016/intrep.dev";
+//			"jdbc:oracle:thin:@intrep-ora-p-01.telenor.rs:2016/intrep";
 	
 	private Connection conn = null;
 	
@@ -92,17 +94,21 @@ public class ConnectionManager {
 		
 	}
 	public Connection getConnection() {
-		if (conn == null) {
-			if (openConnection()) {
-				System.out.println("Connection opened");
+		try {
+			if (conn == null || !conn.isValid(0)) {
+				if (openConnection()) {
+					System.out.println("Connection opened");
+					return conn;
+				}
+				else {
+					return null;
+				}
+			}
+			else {			
 				return conn;
 			}
-			else {
-				return null;
-			}
-		}
-		else {			
-			return conn;
+		} catch (SQLException e) {
+			return null;
 		}
 	}
 	
