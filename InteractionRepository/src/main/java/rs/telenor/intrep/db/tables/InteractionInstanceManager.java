@@ -118,10 +118,10 @@ public class InteractionInstanceManager {
 			ParameterType pt = p.getParamType();
 			switch (pt) {
 			case ValueInt:				
-				sp = new SimpleParameter(p.getParamId(), name, value != "" ? Integer.parseInt(value): -1);					
+				sp = new SimpleParameter(p.getParamId(), name, !value.equalsIgnoreCase("") ? Integer.parseInt(value): -1);					
 				break;
 			case ValueNumber:
-				sp = new SimpleParameter(p.getParamId(), name, value != "" ? Double.parseDouble(value): -1);
+				sp = new SimpleParameter(p.getParamId(), name, !value.equalsIgnoreCase("") ? Double.parseDouble(value): -1);
 				break;
 			case ValueString:
 				sp = new SimpleParameter(p.getParamId(), name, value);
@@ -129,7 +129,7 @@ public class InteractionInstanceManager {
 			default:
 				break;
 			}
-			if (p.getValueDomain() != null && p.getValueDomain() != "") {
+			if (p.getValueDomain() != null && !p.getValueDomain().equalsIgnoreCase("")) {
 				String valueDomainLookupFieldValue = "";
 				ParameterType dpt = p.getValueDomainValueType();
 				switch (pt) {
@@ -137,10 +137,10 @@ public class InteractionInstanceManager {
 					valueDomainLookupFieldValue =  "'"+sp.getValueString()+"'";					
 					break;
 				case ValueNumber:
-					valueDomainLookupFieldValue = Double.toString(value != "" ? sp.getValueDouble():-1);
+					valueDomainLookupFieldValue = Double.toString(!value.equalsIgnoreCase("")  ? sp.getValueDouble():-1);
 					break;
 				case ValueInt:
-					valueDomainLookupFieldValue = Integer.toString(value != ""? sp.getValueInt(): -1);
+					valueDomainLookupFieldValue = Integer.toString(!value.equalsIgnoreCase("") ? sp.getValueInt(): -1);
 				default:
 					break;
 				}
@@ -482,9 +482,9 @@ public class InteractionInstanceManager {
 		int valueCondInt = 0;
 		double valueCondDouble = 0.0;
 		//Pocetak
-		 if (sc.getValueDomain() != null && sc.getValueDomain() != "") {
-				String valueDomainLookupFieldValue = "";
-				
+		 if (sc.getValueDomain() != null && sc.getValueDomain().length() > 0) {
+				String valueDomainLookupFieldValue = "";	//vrednost polja po kojoj se pretrazuje lookup tabela - lookup id
+				//Za vrednost parametra koja je dosla (lookup id) se, u lookup tabeli, nalazi vrednost (lookup value) koja se poredi sa vrednoscu definisanoj u condition-u
 				ParameterType dpt = sp.getpType();
 				switch (dpt) {
 				case ValueString: 
@@ -498,10 +498,11 @@ public class InteractionInstanceManager {
 				default:
 					break;
 				}
-				String domainTable = sc.getValueDomain();
-				String valueDomainLookupField = sc.getValueDomainLookup();
-				String valueDomainValueField = sc.getValueDomainValue();
-				String valueDomainValue;
+				String domainTable = sc.getValueDomain();	//lookup tabela
+				String valueDomainLookupField = sc.getValueDomainLookup();	//polje iz lookup tabele po kojem se pretrazuje
+				String valueDomainValueField = sc.getValueDomainValue();	//polje iz lookup tabele iz koje se uzima vrednost za poredjenje
+				String valueDomainValue;		//vrednost za koju se izracunava condition - lookup value 
+				
 				String pDomainSQL = "SELECT " +
 												valueDomainValueField + " " +
 									"FROM " + domainTable + " " +
@@ -514,7 +515,7 @@ public class InteractionInstanceManager {
 					if (rs.isBeforeFirst()) {
 						rs.first();
 						valueDomainValue = rs.getString(valueDomainValueField);
-						switch (dpt) {
+						switch (sc.getValueType()) {  //mozda bi ovde pre trebalo da bude sc.getValueDomainValueType(), ali to je isto 
 						case ValueInt: 
 							valueCondInt = Integer.parseInt(valueDomainValue);					
 							break;
@@ -542,7 +543,7 @@ public class InteractionInstanceManager {
 		ConditionOperator operator = sc.getOperator(); 
 		switch (operator) {
 		case EQ: 
-			if (sc.getValueDomain() != null && sc.getValueDomain() != "") //Ako je u SimpleCondition-u definisano da se vrednost za uslov nalazi preko lookup tabele
+			if (sc.getValueDomain() != null && sc.getValueDomain().length() > 0) //Ako je u SimpleCondition-u definisano da se vrednost za uslov nalazi preko lookup tabele
 			{
 
 				if (sc.getValueDomainValueType() == ParameterType.ValueString) {
@@ -591,7 +592,7 @@ public class InteractionInstanceManager {
 			}
 			break;
 		case DIF: 
-			if (sc.getValueDomain() != null && sc.getValueDomain() != "") //Ako je u SimpleCondition-u definisano da se vrednost za uslov nalazi preko lookup tabele
+			if (sc.getValueDomain() != null && sc.getValueDomain().length() > 0) //Ako je u SimpleCondition-u definisano da se vrednost za uslov nalazi preko lookup tabele
 			{
 				if (sc.getValueDomainValueType() == ParameterType.ValueString) {
 					if (!valueCondString.equalsIgnoreCase(sc.getValueString())) return true;
@@ -638,105 +639,9 @@ public class InteractionInstanceManager {
 			}
 			break;
 		case GT: 
-			if (sc.getValueDomain() != null && sc.getValueDomain() != "") //Ako je u SimpleCondition-u definisano da se vrednost za uslov nalazi preko lookup tabele
+			if (sc.getValueDomain() != null && sc.getValueDomain().length() >0 ) //Ako je u SimpleCondition-u definisano da se vrednost za uslov nalazi preko lookup tabele
 			{
 
-				if (sc.getValueDomainValueType() == ParameterType.ValueString) {
-					if (valueCondString.compareToIgnoreCase(sc.getValueString()) < 0) return true;
-					else return false;
-				}
-				if (sc.getValueDomainValueType() == ParameterType.ValueInt) {
-					if (valueCondInt < sc.getValueInt()) return true;
-					else return false;
-				}
-				if (sc.getValueDomainValueType() == ParameterType.ValueNumber) {
-					if (valueCondDouble < sc.getValueDouble()) return true;
-					else return false;
-				}
-
-			}
-			else {
-				if (sp.getValueDomainValueType() != null) {
-					if (sp.getValueDomainValueType() == ParameterType.ValueString) {
-						if (sp.getLookupValueString().compareToIgnoreCase(sc.getValueString()) < 0) return true;
-						else return false;
-					}
-					if (sp.getValueDomainValueType() == ParameterType.ValueInt) {
-						if (sp.getLookupValueInt() < sc.getValueInt()) return true;
-						else return false;
-					}
-					if (sp.getValueDomainValueType() == ParameterType.ValueNumber) {
-						if (sp.getLookupValueDouble() < sc.getValueDouble()) return true;
-						else return false;
-					}
-				}
-				else {
-					if (sp.getpType() == ParameterType.ValueString) {
-						if (sp.getValueString().compareToIgnoreCase(sc.getValueString()) < 0) return true;
-						else return false;
-					}
-					if (sp.getpType() == ParameterType.ValueInt) {
-						if (sp.getValueInt() < sc.getValueInt()) return true;
-						else return false;
-					}
-					if (sp.getpType() == ParameterType.ValueNumber) {
-						if (sp.getValueDouble() < sc.getValueDouble()) return true;
-						else return false;
-					}
-				}
-			}
-			break;
-		case GTE: 
-			if (sc.getValueDomain() != null && sc.getValueDomain() != "") //Ako je u SimpleCondition-u definisano da se vrednost za uslov nalazi preko lookup tabele
-			{
-				if (sc.getValueDomainValueType() == ParameterType.ValueString) {
-					if (valueCondString.compareToIgnoreCase(sc.getValueString()) <= 0) return true;
-					else return false;
-				}
-				if (sc.getValueDomainValueType() == ParameterType.ValueInt) {
-					if (valueCondInt <= sc.getValueInt()) return true;
-					else return false;
-				}
-				if (sc.getValueDomainValueType() == ParameterType.ValueNumber) {
-					if (valueCondDouble <= sc.getValueDouble()) return true;
-					else return false;
-				}
-			}
-			else
-			{
-				if (sp.getValueDomainValueType() != null) {
-					if (sp.getValueDomainValueType() == ParameterType.ValueString) {
-						if (sp.getLookupValueString().compareToIgnoreCase(sc.getValueString()) <= 0) return true;
-						else return false;
-					}
-					if (sp.getValueDomainValueType() == ParameterType.ValueInt) {
-						if (sp.getLookupValueInt() <= sc.getValueInt()) return true;
-						else return false;
-					}
-					if (sp.getValueDomainValueType() == ParameterType.ValueNumber) {
-						if (sp.getLookupValueDouble() <= sc.getValueDouble()) return true;
-						else return false;
-					}
-				}
-				else {
-					if (sp.getpType() == ParameterType.ValueString) {
-						if (sp.getValueString().compareToIgnoreCase(sc.getValueString()) <= 0) return true;
-						else return false;
-					}
-					if (sp.getpType() == ParameterType.ValueInt) {
-						if (sp.getValueInt() <= sc.getValueInt()) return true;
-						else return false;
-					}
-					if (sp.getpType() == ParameterType.ValueNumber) {
-						if (sp.getValueDouble() <= sc.getValueDouble()) return true;
-						else return false;
-					}
-				}
-			}
-			break;
-		case LT: 
-			if (sc.getValueDomain() != null && sc.getValueDomain() != "") //Ako je u SimpleCondition-u definisano da se vrednost za uslov nalazi preko lookup tabele
-			{
 				if (sc.getValueDomainValueType() == ParameterType.ValueString) {
 					if (valueCondString.compareToIgnoreCase(sc.getValueString()) > 0) return true;
 					else return false;
@@ -749,9 +654,9 @@ public class InteractionInstanceManager {
 					if (valueCondDouble > sc.getValueDouble()) return true;
 					else return false;
 				}
+
 			}
-			else 
-			{
+			else {
 				if (sp.getValueDomainValueType() != null) {
 					if (sp.getValueDomainValueType() == ParameterType.ValueString) {
 						if (sp.getLookupValueString().compareToIgnoreCase(sc.getValueString()) > 0) return true;
@@ -782,23 +687,23 @@ public class InteractionInstanceManager {
 				}
 			}
 			break;
-		case LTE: 
+		case GTE: 
 			if (sc.getValueDomain() != null && sc.getValueDomain() != "") //Ako je u SimpleCondition-u definisano da se vrednost za uslov nalazi preko lookup tabele
-			{				
-					if (sc.getValueDomainValueType() == ParameterType.ValueString) {
-						if (valueCondString.compareToIgnoreCase(sc.getValueString()) >= 0) return true;
-						else return false;
-					}
-					if (sc.getValueDomainValueType() == ParameterType.ValueInt) {
-						if (valueCondInt >= sc.getValueInt()) return true;
-						else return false;
-					}
-					if (sc.getValueDomainValueType() == ParameterType.ValueNumber) {
-						if (valueCondDouble >= sc.getValueDouble()) return true;
-						else return false;
-					}
+			{
+				if (sc.getValueDomainValueType() == ParameterType.ValueString) {
+					if (valueCondString.compareToIgnoreCase(sc.getValueString()) >= 0) return true;
+					else return false;
+				}
+				if (sc.getValueDomainValueType() == ParameterType.ValueInt) {
+					if (valueCondInt >= sc.getValueInt()) return true;
+					else return false;
+				}
+				if (sc.getValueDomainValueType() == ParameterType.ValueNumber) {
+					if (valueCondDouble >= sc.getValueDouble()) return true;
+					else return false;
+				}
 			}
-			else 
+			else
 			{
 				if (sp.getValueDomainValueType() != null) {
 					if (sp.getValueDomainValueType() == ParameterType.ValueString) {
@@ -816,7 +721,7 @@ public class InteractionInstanceManager {
 				}
 				else {
 					if (sp.getpType() == ParameterType.ValueString) {
-						if (sp.getValueString().compareToIgnoreCase(sc.getValueString()) < 0) return true;
+						if (sp.getValueString().compareToIgnoreCase(sc.getValueString()) >= 0) return true;
 						else return false;
 					}
 					if (sp.getpType() == ParameterType.ValueInt) {
@@ -825,6 +730,102 @@ public class InteractionInstanceManager {
 					}
 					if (sp.getpType() == ParameterType.ValueNumber) {
 						if (sp.getValueDouble() >= sc.getValueDouble()) return true;
+						else return false;
+					}
+				}
+			}
+			break;
+		case LT: 
+			if (sc.getValueDomain() != null && sc.getValueDomain() != "") //Ako je u SimpleCondition-u definisano da se vrednost za uslov nalazi preko lookup tabele
+			{
+				if (sc.getValueDomainValueType() == ParameterType.ValueString) {
+					if (valueCondString.compareToIgnoreCase(sc.getValueString()) < 0) return true;
+					else return false;
+				}
+				if (sc.getValueDomainValueType() == ParameterType.ValueInt) {
+					if (valueCondInt < sc.getValueInt()) return true;
+					else return false;
+				}
+				if (sc.getValueDomainValueType() == ParameterType.ValueNumber) {
+					if (valueCondDouble < sc.getValueDouble()) return true;
+					else return false;
+				}
+			}
+			else 
+			{
+				if (sp.getValueDomainValueType() != null) {
+					if (sp.getValueDomainValueType() == ParameterType.ValueString) {
+						if (sp.getLookupValueString().compareToIgnoreCase(sc.getValueString()) < 0) return true;
+						else return false;
+					}
+					if (sp.getValueDomainValueType() == ParameterType.ValueInt) {
+						if (sp.getLookupValueInt() < sc.getValueInt()) return true;
+						else return false;
+					}
+					if (sp.getValueDomainValueType() == ParameterType.ValueNumber) {
+						if (sp.getLookupValueDouble() < sc.getValueDouble()) return true;
+						else return false;
+					}
+				}
+				else {
+					if (sp.getpType() == ParameterType.ValueString) {
+						if (sp.getValueString().compareToIgnoreCase(sc.getValueString()) < 0) return true;
+						else return false;
+					}
+					if (sp.getpType() == ParameterType.ValueInt) {
+						if (sp.getValueInt() < sc.getValueInt()) return true;
+						else return false;
+					}
+					if (sp.getpType() == ParameterType.ValueNumber) {
+						if (sp.getValueDouble() < sc.getValueDouble()) return true;
+						else return false;
+					}
+				}
+			}
+			break;
+		case LTE: 
+			if (sc.getValueDomain() != null && sc.getValueDomain() != "") //Ako je u SimpleCondition-u definisano da se vrednost za uslov nalazi preko lookup tabele
+			{				
+					if (sc.getValueDomainValueType() == ParameterType.ValueString) {
+						if (valueCondString.compareToIgnoreCase(sc.getValueString()) <= 0) return true;
+						else return false;
+					}
+					if (sc.getValueDomainValueType() == ParameterType.ValueInt) {
+						if (valueCondInt <= sc.getValueInt()) return true;
+						else return false;
+					}
+					if (sc.getValueDomainValueType() == ParameterType.ValueNumber) {
+						if (valueCondDouble <= sc.getValueDouble()) return true;
+						else return false;
+					}
+			}
+			else 
+			{
+				if (sp.getValueDomainValueType() != null) {
+					if (sp.getValueDomainValueType() == ParameterType.ValueString) {
+						if (sp.getLookupValueString().compareToIgnoreCase(sc.getValueString()) <= 0) return true;
+						else return false;
+					}
+					if (sp.getValueDomainValueType() == ParameterType.ValueInt) {
+						if (sp.getLookupValueInt() <= sc.getValueInt()) return true;
+						else return false;
+					}
+					if (sp.getValueDomainValueType() == ParameterType.ValueNumber) {
+						if (sp.getLookupValueDouble() <= sc.getValueDouble()) return true;
+						else return false;
+					}
+				}
+				else {
+					if (sp.getpType() == ParameterType.ValueString) {
+						if (sp.getValueString().compareToIgnoreCase(sc.getValueString()) < 0) return true;
+						else return false;
+					}
+					if (sp.getpType() == ParameterType.ValueInt) {
+						if (sp.getValueInt() <= sc.getValueInt()) return true;
+						else return false;
+					}
+					if (sp.getpType() == ParameterType.ValueNumber) {
+						if (sp.getValueDouble() <= sc.getValueDouble()) return true;
 						else return false;
 					}
 				}

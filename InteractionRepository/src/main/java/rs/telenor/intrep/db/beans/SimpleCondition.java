@@ -8,10 +8,10 @@ public class SimpleCondition {
 	String valueString;
 	int valueInt;
 	double valueDouble;
-	String valueDomain;
-	String valueDomainLookup;
-	String valueDomainValue;
-	ParameterType valueDomainValueType;
+	String valueDomain;		//lookup tabela
+	String valueDomainLookup;	//polje iz lookup tabele po kojem se pretrazuje - lookup polje
+	String valueDomainValue;	//polje iz lookup tabele koje se poredi - lookup value
+	ParameterType valueDomainValueType; //tip lookup value-a
 	ConditionOperator operator;
 	String scope; // ALL, ANY -> ima smisla kod parametar koji imaju parent parametre, tj. ponavljaju se u interakciji - ovo odredjuje da li uslov vazi za sve parametre
 	
