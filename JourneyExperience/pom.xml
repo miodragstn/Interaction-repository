@@ -7,7 +7,7 @@
   	<dependency>
 		 <groupId>rs.telenor.intrep</groupId>
 		  <artifactId>InteractionRepository</artifactId>
-		  <version>0.0.9</version>
+		  <version>1.0.0</version>
  	</dependency>
  	</dependencies>
  	<build>
@@ -17,8 +17,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.6.0</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
       </plugins>

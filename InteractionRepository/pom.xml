@@ -33,7 +33,7 @@
   	<dependency>
 		 <groupId>com.oracle</groupId>
 		 <artifactId>ojdbc7</artifactId>
-		 <version>12.1.0.1</version>
+		 <version>12.1.0.2</version>
  	</dependency>
 	<dependency>
 	    <groupId>org.codehaus.jackson</groupId>
@@ -71,11 +71,11 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.6.0</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
-     <plugin>
+   <!--  <plugin>
 		  <groupId>org.apache.maven.plugins</groupId>
 		  <artifactId>maven-jar-plugin</artifactId>
 			<configuration>
@@ -89,6 +89,7 @@
 			        </archive>
       </configuration>
    </plugin>
+    -->
    <!-- 
       <plugin>
             <artifactId>maven-dependency-plugin</artifactId>
